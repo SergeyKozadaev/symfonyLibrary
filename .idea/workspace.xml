@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="436e2372-f9dd-44cb-bba2-7e7c3e9b3122" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Controller/ArticleController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/ArticleController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/article/show.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/article/show.html.twig" afterDir="false" />
-    </list>
+    <list default="true" id="436e2372-f9dd-44cb-bba2-7e7c3e9b3122" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,7 +15,7 @@
     <session id="68999316">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="2" />
+          <entry key="project.closed" value="3" />
           <entry key="project.open.time.1" value="3" />
           <entry key="project.opened" value="3" />
         </counts>
@@ -234,7 +230,7 @@
   <component name="ProjectFrameBounds" extendedState="4">
     <option name="x" value="993" />
     <option name="y" value="24" />
-    <option name="width" value="927" />
+    <option name="width" value="925" />
     <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -321,12 +317,12 @@
       <updated>1540998878795</updated>
       <workItem from="1540998880467" duration="1540000" />
       <workItem from="1542105824363" duration="10862000" />
-      <workItem from="1542193777521" duration="6247000" />
+      <workItem from="1542193777521" duration="6844000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="18649000" />
+    <option name="totallyTimeSpent" value="19246000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="993" y="24" width="927" height="1056" extended-state="4" />
