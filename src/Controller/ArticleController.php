@@ -5,6 +5,7 @@ namespace App\Controller;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -20,12 +21,19 @@ class ArticleController extends AbstractController
     /**
      * @Route("/news/{slug}", name="app_news")
      */
-    public function news($slug, LoggerInterface $logger, SessionInterface $session, Request $request) {
+    public function news($slug, LoggerInterface $logger, SessionInterface $session, Request $request, AdapterInterface $cache) {
         $comments = [
-            "first test comment",
+            "first test comment@@@",
             "second test comment #2",
             "3rd comment in test array"
         ];
+
+        $item = $cache->getItem('comments_'.md5('comments'));
+        if(!$item->isHit()) {
+            $item->set($comments);
+            $cache->save($item);
+        }
+        $cachedComments = $item->get();
 
         $logger->info('news article controller');
 
@@ -38,10 +46,9 @@ class ArticleController extends AbstractController
             throw $this->createNotFoundException("Not found exception");
         }
 
-
         return $this->render('article/show.html.twig', [
             'title' => ucfirst($slug),
-            'comments' => $comments,
+            'comments' => $cachedComments,
             'name' => $session->get("name", ""),
             'request' => $request
         ]);
