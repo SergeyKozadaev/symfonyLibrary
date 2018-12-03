@@ -1,17 +1,69 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}
-            <link rel="stylesheet" href="{{ asset('css/some-styles.css') }}">
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}
-            <a href="{{ path('app_news', {slug: 'some-slug'}) }}">Еще одна ссылка</a>
-        {% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Welcome, friend!{% endblock %}</title>
 
-        {% block javascripts %}{% endblock %}
-    </body>
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('css/some-styles.css') }}">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    {% endblock %}
+
+</head>
+<body>
+{% block header %}
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a href="{{ path('app_homepage') }}" class="navbar-brand">Personal Library</a>
+            </div>
+
+            <div class="nav navbar-nav navbar-right">
+                {% if is_granted('ROLE_USER') %}
+                    <li>
+                        <a href="{{ path('fos_user_security_logout') }}">
+                            <span class="glyphicon glyphicon-log-out"></span> Logout
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ path('fos_user_security_login') }}">
+                            <span class="glyphicon glyphicon-log-in"></span> Login
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ path('fos_user_registration_register') }}">
+                            <span class="glyphicon glyphicon-user"></span> Register
+                        </a>
+                    </li>
+                {% endif %}
+            </div>
+
+        </div>
+    </nav>
+{% endblock %}
+
+
+{% block body %}
+    <a href="{{ path('app_news', {slug: 'some-slug'}) }}">Some test link</a>
+{% endblock %}
+
+
+{% block footer %}
+    <nav class="modal-footer navbar-fixed-bottom">
+        <div class="container">
+            <div class="row">
+                <p class="pull-left">Some footer information</p>
+                <p class="pull-right">My personal library site</p>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+{% endblock %}
+</body>
 </html>
