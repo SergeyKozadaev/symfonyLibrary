@@ -5,3 +5,7 @@ fos_user:
   from_email:
     address: "Serge1.2007@mail.ru"
     sender_name: "Library"
+
+  registration:
+    form:
+      type: App\Form\RegistrationFormType
