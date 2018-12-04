@@ -1,6 +1,3 @@
 security:
     login:
         password: Парольчик
-
-form:
-    firstName: Имя

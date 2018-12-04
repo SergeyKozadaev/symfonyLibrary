@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+
+{% block body %}
+
+    {% for book in books %}
+        {{ book.id }}
+        {{ book.title }}
+        {{ book.author }}
+        {{ book.addedDate|ago }}
+        <br>
+    {% endfor %}
+
+{% endblock %}

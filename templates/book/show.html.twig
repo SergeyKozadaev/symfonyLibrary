@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+
+{% block body %}
+
+    {% block title %}
+        Read: {{ book.title }}
+    {% endblock %}
+
+    <div class="container">
+        <div class="row">
+            ID = {{ book.id }}
+        </div>
+
+        <div class="row">
+            AUTHOR = {{ book.author }}
+        </div>
+
+        <div class="row">
+            DATE = {{ book.addedDate|ago}}
+        </div>
+    </div>
+
+{% endblock %}
