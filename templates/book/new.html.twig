@@ -1,10 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h2>Adding a new book!</h2>
-    {{ form_start(bookForm) }}
+    <div class="container">
+        <h2>Adding a new book!</h2>
+        {{ form_start(bookForm) }}
         {{ form_widget(bookForm) }}
 
         <button type="submit" class="btn btn-primary">Create</button>
-    {{ form_end(bookForm) }}
+        {{ form_end(bookForm) }}
+    </div>
 {% endblock %}

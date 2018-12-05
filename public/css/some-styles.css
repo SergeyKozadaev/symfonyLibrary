@@ -1,3 +1,13 @@
 h3 {
     color: #005587;
 }
+.left {
+    float: left;
+    width: 30%;
+    max-height: 300px;
+    max-width: 300px;
+}
+.right {
+    float: left;
+    width: 70%;
+}

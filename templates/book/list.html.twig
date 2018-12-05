@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+    {% for book in books %}
+        <div class="container">
+                <div class="left">
+                    {% if book.coverImage %}
+                        <img src="{{ asset('upload/images/' ~ book.coverImage) }}">
+                    {% else %}
+                        <img src="{{ asset('upload/images/book.png') }}">
+                    {% endif %}
+                </div>
+
+                <div class="right">
+                    <h3><a href="{{ path('app_show_book', {id: book.id}) }}">{{ book.title }}</a></h3>
+                    <p>{{ book.author }}</p>
+
+                    <p>{{ book.addedDate|ago }}</p>
+                    <p>{{ book.addedDate|date('d.m.Y H:i:s') }}</p>
+
+                    {% if book.downloadable and book.file %}
+                        <a href="{{ asset('upload/files/' ~ book.file) }}">Скачать</a>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_USER') %}
+                        <a href="{{ path('app_edit_book', {id: book.id}) }}">Редактировать</a>
+                    {% endif %}
+                </div>
+                <br>
+            <br>
+        </div>
+    {% endfor %}
+
+{% endblock %}

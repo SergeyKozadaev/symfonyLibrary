@@ -13,7 +13,6 @@
             <link rel="stylesheet" href="{{ asset('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css') }}">
         {% endblock %}
     </head>
-
     <body>
         <div class="header">
             {% block header %}
@@ -22,8 +21,13 @@
         </div>
 
         <div class="body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {%  endfor %}
+
             {% block body %}
-                <a href="{{ path('app_news', {slug: 'some-slug'}) }}">Some test link</a>
             {% endblock %}
         </div>
 
