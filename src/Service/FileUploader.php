@@ -7,30 +7,31 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileUploader
 {
-    private $targetDirectory;
 
     public function upload(UploadedFile $file, $targetDirectory)
     {
-        $this->setTargetDirectory($targetDirectory);
-
         $fileName = md5(uniqid()).'.'.$file->guessExtension();
+        $randomDir = $this->generateRandomDir() . "/";
 
         try {
-            $file->move($this->getTargetDirectory(), $fileName);
+            $file->move($targetDirectory . $randomDir, $fileName);
         } catch (FileException $e) {
             // ... handle exception if something happens during file upload
         }
 
-        return $fileName;
+        return $randomDir . $fileName;
     }
 
-    public function getTargetDirectory()
+    public function generateRandomDir($length = 3)
     {
-        return $this->targetDirectory;
-    }
+        $chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+        $charsLength = strlen($chars);
+        $randomString = '';
 
-    public function setTargetDirectory($targetDirectory)
-    {
-        $this->targetDirectory = $targetDirectory;
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $chars[rand(0, $charsLength - 1)];
+        }
+
+        return $randomString;
     }
 }

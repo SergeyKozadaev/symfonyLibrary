@@ -1,3 +1,6 @@
 security:
     login:
-        password: Парольчик
+        password: Пароль
+
+form:
+    username: Логин

@@ -47,8 +47,8 @@ class Book
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\File(
-     *     maxSize="5Mi",
-     *     mimeTypes={"application/pdf"}
+     *     mimeTypes={"application/pdf"},
+     *     maxSize="5Mi"
      * )
      */
     private $file;

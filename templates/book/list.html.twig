@@ -10,9 +10,9 @@
         <div class="container">
                 <div class="left">
                     {% if book.coverImage %}
-                        <img src="{{ asset('upload/images/' ~ book.coverImage) }}">
+                        <img src="{{ imgResize(book.coverImage, 240, 320) }}">
                     {% else %}
-                        <img src="{{ asset('upload/images/book.png') }}">
+                        <img src="{{ asset('images/book.jpeg') }}">
                     {% endif %}
                 </div>
 
@@ -20,16 +20,17 @@
                     <h3><a href="{{ path('app_show_book', {id: book.id}) }}">{{ book.title }}</a></h3>
                     <p>{{ book.author }}</p>
 
-                    <p>{{ book.addedDate|ago }}</p>
-                    <p>{{ book.addedDate|date('d.m.Y H:i:s') }}</p>
+                    <p>{{ book.addedDate|ago }} ( {{ book.addedDate|date('d.m.Y H:i') }} )</p>
 
-                    {% if book.downloadable and book.file %}
-                        <a href="{{ asset('upload/files/' ~ book.file) }}">Скачать</a>
-                    {% endif %}
+                    <div class="right-buttons">
+                        {% if is_granted('ROLE_USER') %}
+                            <a class="btn btn-primary" href="{{ path('app_edit_book', {id: book.id}) }}">Редактировать</a>
+                        {% endif %}
 
-                    {% if is_granted('ROLE_USER') %}
-                        <a href="{{ path('app_edit_book', {id: book.id}) }}">Редактировать</a>
-                    {% endif %}
+                        {% if book.downloadable and book.file %}
+                            <a class="btn btn-primary" href="{{ asset('upload/files/' ~ book.file) }}">Скачать</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <br>
             <br>

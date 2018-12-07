@@ -2,11 +2,17 @@
 
 {% block body %}
     <div class="container">
-        <h2>Adding a new book!</h2>
-        {{ form_start(bookForm) }}
-        {{ form_widget(bookForm) }}
+        <h2>Добавим новую книгу!</h2>
 
-        <button type="submit" class="btn btn-primary">Create</button>
+        {{ form_start(bookForm) }}
+            {{ form_row(bookForm.title) }}
+            {{ form_row(bookForm.author) }}
+            {{ form_row(bookForm.addedDate) }}
+            {{ form_row(bookForm.downloadable) }}
+            {{ form_row(bookForm.coverImage) }}
+            {{ form_row(bookForm.file) }}
+
+            <button type="submit" class="btn btn-primary">Добавить</button>
         {{ form_end(bookForm) }}
     </div>
 {% endblock %}

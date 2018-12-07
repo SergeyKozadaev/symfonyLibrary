@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container">
+        <h2>Отредактируем данные книги!</h2>
+
+        {{ form_errors(bookForm) }}
+
+        {{ form_start(bookForm) }}
+            {{ form_row(bookForm.title) }}
+            {{ form_row(bookForm.author) }}
+            {{ form_row(bookForm.addedDate) }}
+            {{ form_row(bookForm.downloadable) }}
+
+            {% if bookForm.coverImage.vars.data is not null  %}
+                <a href="{{ path('app_homepage') }}" class="btn btn-primary">Удалить файл обложки</a>
+                {{ form_row(bookForm.coverImage) }}
+            {% else %}
+                {{ form_row(bookForm.coverImage) }}
+            {% endif %}
+
+            {% if bookForm.file.vars.data is not null  %}
+                <a href="{{ path('app_homepage') }}" class="btn btn-primary">Удалить файл книги</a>
+                {{ form_row(bookForm.file) }}
+            {% else %}
+                {{ form_row(bookForm.file) }}
+            {% endif %}
+
+        <button type="submit" class="btn btn-primary">Добавить</button>
+
+        <a class="btn btn-primary" href="{{ path('app_delete_book', {id: id}) }}">Удалить всё!</a>
+
+        {{ form_end(bookForm, {'render_rest': false}) }}
+    </div>
+{% endblock %}

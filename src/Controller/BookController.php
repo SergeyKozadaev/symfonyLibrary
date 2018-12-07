@@ -3,11 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Book;
-use App\Form\BookFormType;
+use App\Form\BookAddFormType;
+use App\Form\BookEditFormType;
 use App\Repository\BookRepository;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,7 +21,19 @@ class BookController extends AbstractController
      */
     public function list(BookRepository $repository)
     {
-        $books = $repository->findBy([], ['addedDate' => 'DESC']);
+        $cache = new FilesystemAdapter();
+        //$cache->deleteItem('list_of_books');
+        $cachedBooks = $cache->getItem('list_of_books');
+
+        if(!$cachedBooks->isHit()) {
+            $books = $repository->findBy([], ['addedDate' => 'DESC']);
+
+            $cachedBooks->expiresAfter(600);
+            $cachedBooks->set($books);
+            $cache->save($cachedBooks);
+        } else {
+            $books = $cachedBooks->get();
+        }
 
         return $this->render('book/list.html.twig', [
            'books' => $books
@@ -31,27 +45,30 @@ class BookController extends AbstractController
      */
     public function new(Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
     {
-        $form = $this->createForm(BookFormType::class);
+        $form = $this->createForm(BookAddFormType::class);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('list_of_books');
 
             /** @var Book $book */
             $book = $form->getData();
 
-            $file = $book->getFile();
-            $image = $book->getCoverImage();
+            if($file = $book->getFile()) {
+                $fileName = $fileUploader->upload($file, $this->getParameter('files_directory'));
+                $book->setFile($fileName);
+            };
 
-            $fileName = $fileUploader->upload($file, $this->getParameter('files_directory'));
-            $imageName = $fileUploader->upload($image, $this->getParameter('images_directory'));
-
-            $book->setCoverImage($imageName);
-            $book->setFile($fileName);
+            if($image = $book->getCoverImage()) {
+                $imageName = $fileUploader->upload($image, $this->getParameter('images_directory'));
+                $book->setCoverImage($imageName);
+            }
 
             $em->persist($book);
             $em->flush();
 
-            $this->addFlash('success', "You are great!");
+            $this->addFlash('success', "Еще одна книга прочитана, отличная работа!");
 
             return $this->redirectToRoute('app_homepage');
         }
@@ -64,24 +81,27 @@ class BookController extends AbstractController
     /**
      * @Route("/book/edit/{id}", name="app_edit_book")
      */
-    public function edit(Book $book, Request $request, EntityManagerInterface $em)
+    public function edit($id, Book $book, Request $request, EntityManagerInterface $em)
     {
+
         if($book->getCoverImage() !== null) {
             $book->setCoverImage(
-                new File($this->getParameter('images_directory').'/'.$book->getCoverImage())
+                new File($this->getParameter('images_directory') . $book->getCoverImage())
             );
         }
 
         if($book->getFile() !== null) {
             $book->setFile(
-                new File($this->getParameter('files_directory').'/'.$book->getFile())
+                new File($this->getParameter('files_directory') . $book->getFile())
             );
         }
 
-        $form = $this->createForm(BookFormType::class, $book);
+        $form = $this->createForm(BookEditFormType::class, $book);
 
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()) {
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem('list_of_books');
 
             /** @var Book $book */
             $book = $form->getData();
@@ -89,13 +109,14 @@ class BookController extends AbstractController
             $em->persist($book);
             $em->flush();
 
-            $this->addFlash('success', "You are great!");
+            $this->addFlash('success', "Изменения внесены успешно!");
 
             return $this->redirectToRoute('app_homepage');
         }
 
-        return $this->render('book/new.html.twig', [
-            'bookForm' => $form->createView()
+        return $this->render('book/edit.html.twig', [
+            'bookForm' => $form->createView(),
+            'id' => $id
         ]);
     }
 
@@ -115,5 +136,19 @@ class BookController extends AbstractController
         return $this->render('book/show.html.twig', [
             'book' => $book
         ]);
+    }
+
+    /**
+     * @Route("/book/delete/{id}", name="app_delete_book")
+     */
+    public function delete(Book $book, EntityManagerInterface $em)
+    {
+        $em->remove($book);
+        $em->flush();
+
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem('list_of_books');
+
+        return $this->redirectToRoute('app_homepage');
     }
 }

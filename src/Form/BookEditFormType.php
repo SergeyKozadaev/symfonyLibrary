@@ -7,21 +7,28 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class BookFormType extends AbstractType
+class BookEditFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('title', null, ['help' => 'some help text'])
-            ->add('author')
-            ->add('addedDate', DateTimeType::class, [
-                'choice_translation_domain' => true,
-                'data' => new \DateTime()
+            ->add('title', TextType::class, [
+                'label' => 'Название'
             ])
-            ->add('downloadable', CheckboxType::class, ['required' => false])
+            ->add('author', TextType::class, [
+                'label' => 'Автор'
+            ])
+            ->add('addedDate', DateTimeType::class, [
+                'label' => 'Дата прочтения'
+            ])
+            ->add('downloadable', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Доступно для скачивания'
+            ])
             ->add('coverImage', FileType::class, [
                 'required' => false,
                 'label' => 'Обложка: '

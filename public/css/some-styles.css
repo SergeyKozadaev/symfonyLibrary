@@ -1,13 +1,20 @@
 h3 {
     color: #005587;
 }
+
+.body .container {
+    margin-bottom: 25px;
+}
+.body .container .right .right-buttons{
+
+}
+
 .left {
     float: left;
-    width: 30%;
-    max-height: 300px;
-    max-width: 300px;
+    width: auto;
 }
 .right {
     float: left;
-    width: 70%;
+    width: auto;
+    margin-left: 15px;
 }
