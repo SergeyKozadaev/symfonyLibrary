@@ -137,9 +137,11 @@ class Book
 
     public function isDownloadable(): bool
     {
-        return $this->isDownloadable() !== null;
+        return $this->downloadable !== false;
     }
 
+
+    // custom validation function for Book class
     /**
      * @Assert\Callback()
      */

@@ -10,8 +10,15 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class FileClearingSubscriber implements EventSubscriber
 {
-    const IMAGE_DIR = 'upload/images/';
-    const FILE_DIR = 'upload/files/';
+    //private $imageResizeDir;
+    private $imageDir;
+    private $filesDir;
+
+    public function __construct($imageDir, $filesDir)
+    {
+        $this->imageDir = $imageDir;
+        $this->filesDir = $filesDir;
+    }
 
     public function getSubscribedEvents()
     {
@@ -27,17 +34,21 @@ class FileClearingSubscriber implements EventSubscriber
 
     public function clear(LifecycleEventArgs $args)
     {
+
         $filesystem = new Filesystem();
         $entity = $args->getObject();
 
         if($entity instanceof Book) {
 
-            if($entity->getFile() && $filesystem->exists(self::FILE_DIR . $entity->getFile())) {
-                $filesystem->remove(self::FILE_DIR . $entity->getFile());
+            $fileSrc = $this->filesDir . $entity->getFile();
+            $imageSrc = $this->imageDir . $entity->getCoverImage();
+
+            if($entity->getFile() && $filesystem->exists($fileSrc)) {
+                $filesystem->remove($fileSrc);
             }
 
-            if($entity->getCoverImage() && $filesystem->exists(self::IMAGE_DIR . $entity->getCoverImage())) {
-                $filesystem->remove(self::IMAGE_DIR . $entity->getCoverImage());
+            if($entity->getCoverImage() && $filesystem->exists($imageSrc)) {
+                $filesystem->remove($imageSrc);
             }
         }
     }

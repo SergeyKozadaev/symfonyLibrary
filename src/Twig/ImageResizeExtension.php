@@ -9,14 +9,15 @@ use Twig\TwigFunction;
 
 class ImageResizeExtension extends AbstractExtension
 {
-    const IMAGE_DIR = 'upload/images/';
-    const RESIZE_DIR = 'upload/images/resize/';
-
     private $fileSystem;
+    private $imageResizeDir;
+    private $imageDir;
 
-    public function __construct(Filesystem $fileSystem)
+    public function __construct(Filesystem $fileSystem, $imageDir, $imageResizeDir)
     {
         $this->fileSystem = $fileSystem;
+        $this->imageDir = $imageDir;
+        $this->imageResizeDir = $imageResizeDir;
     }
 
     public function getFunctions()
@@ -32,10 +33,10 @@ class ImageResizeExtension extends AbstractExtension
         ];
     }
 
-    public function imageResize(string $imgSrc, int $width, int $height)
+    public function imageResize(string $imageSrc, int $width, int $height)
     {
-        $resizeName =  substr(strrchr($imgSrc, "/"), 1);
-        $resizeDir = self::RESIZE_DIR . $width . "x" . $height . "/" . str_replace($resizeName, "", $imgSrc);
+        $resizeName =  substr(strrchr($imageSrc, "/"), 1);
+        $resizeDir = $this->imageResizeDir . $width . "x" . $height . "/" . str_replace($resizeName, "", $imageSrc);
         $resizeSrc = $resizeDir . $resizeName;
 
         if(!$this->fileSystem->exists($resizeSrc)) {
@@ -47,12 +48,12 @@ class ImageResizeExtension extends AbstractExtension
             $manager = new ImageManager(['driver' => 'imagick']);
 
             $manager
-                ->make(self::IMAGE_DIR . $imgSrc)
+                ->make($this->imageDir . $imageSrc)
                 ->resize($width, $height)
-                ->save($resizeSrc);
+                ->save($resizeSrc)
+            ;
         }
 
-        echo $resizeSrc;
+        echo "/" . $resizeSrc;
     }
-
 }

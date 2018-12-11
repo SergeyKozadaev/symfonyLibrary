@@ -29,11 +29,11 @@ class BookEditFormType extends AbstractType
                 'required' => false,
                 'label' => 'Доступно для скачивания'
             ])
-            ->add('coverImage', FileType::class, [
+            ->add('coverImage', TextType::class, [
                 'required' => false,
                 'label' => 'Обложка: '
             ])
-            ->add('file', FileType::class, [
+            ->add('file', TextType::class, [
                 'required' => false,
                 'label' => 'Файл: '
             ])

@@ -11,18 +11,18 @@ class FileUploader
     public function upload(UploadedFile $file, $targetDirectory)
     {
         $fileName = md5(uniqid()).'.'.$file->guessExtension();
-        $randomDir = $this->generateRandomDir() . "/";
+        $randomDir = $this->generateRandomString() . "/";
 
         try {
             $file->move($targetDirectory . $randomDir, $fileName);
         } catch (FileException $e) {
-            // ... handle exception if something happens during file upload
+            return false;
         }
 
         return $randomDir . $fileName;
     }
 
-    public function generateRandomDir($length = 3)
+    public function generateRandomString($length = 3)
     {
         $chars = '0123456789abcdefghijklmnopqrstuvwxyz';
         $charsLength = strlen($chars);

@@ -5,8 +5,14 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'ru'
-    images_directory: '%kernel.project_dir%/public/upload/images/'
-    files_directory: '%kernel.project_dir%/public/upload/files/'
+
+    images_directory: 'upload/images/'
+    resize_images_directory: 'upload/resize_images/'
+    files_directory: 'upload/files/'
+
+    api_v1_key: 'some_secret_key'
+
+    book_list_cache_name: 'book_list'
 
 services:
     # default configuration for services in *this* file
@@ -36,7 +42,13 @@ services:
 
     App\Twig\ImageResizeExtension:
         tags: ['twig.extension']
+        arguments:
+            $imageResizeDir: 'upload/resize_images/'
+            $imageDir: 'upload/images/'
 
     App\EventListener\FileClearingSubscriber:
         tags:
             - { name: doctrine.event_subscriber, connection: default}
+        arguments:
+            $imageDir: 'upload/images/'
+            $filesDir: 'upload/files/'

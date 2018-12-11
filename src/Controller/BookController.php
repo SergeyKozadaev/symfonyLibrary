@@ -10,25 +10,28 @@ use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class BookController extends AbstractController
 {
+
     /**
      * @Route("/", name="app_homepage")
      */
     public function list(BookRepository $repository)
     {
         $cache = new FilesystemAdapter();
-        //$cache->deleteItem('list_of_books');
-        $cachedBooks = $cache->getItem('list_of_books');
+        //$cache->deleteItem($this->getParameter("book_list_cache_name"));
+        $cachedBooks = $cache->getItem($this->getParameter("book_list_cache_name"));
 
         if(!$cachedBooks->isHit()) {
             $books = $repository->findBy([], ['addedDate' => 'DESC']);
 
-            $cachedBooks->expiresAfter(600);
+            $cachedBooks->expiresAfter(86400);
             $cachedBooks->set($books);
             $cache->save($cachedBooks);
         } else {
@@ -50,19 +53,19 @@ class BookController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid()) {
             $cache = new FilesystemAdapter();
-            $cache->deleteItem('list_of_books');
+            $cache->deleteItem($this->getParameter("book_list_cache_name"));
 
             /** @var Book $book */
             $book = $form->getData();
 
             if($file = $book->getFile()) {
                 $fileName = $fileUploader->upload($file, $this->getParameter('files_directory'));
-                $book->setFile($fileName);
+                $book->setFile($fileName ?: null);
             };
 
             if($image = $book->getCoverImage()) {
                 $imageName = $fileUploader->upload($image, $this->getParameter('images_directory'));
-                $book->setCoverImage($imageName);
+                $book->setCoverImage($imageName ?: null);
             }
 
             $em->persist($book);
@@ -81,9 +84,9 @@ class BookController extends AbstractController
     /**
      * @Route("/book/edit/{id}", name="app_edit_book")
      */
-    public function edit($id, Book $book, Request $request, EntityManagerInterface $em)
+    public function edit($id, Request $request, EntityManagerInterface $em)
     {
-
+        /*
         if($book->getCoverImage() !== null) {
             $book->setCoverImage(
                 new File($this->getParameter('images_directory') . $book->getCoverImage())
@@ -95,16 +98,25 @@ class BookController extends AbstractController
                 new File($this->getParameter('files_directory') . $book->getFile())
             );
         }
+        */
+        $repository = $em->getRepository(Book::class);
+        /** @var Book $book */
+        $book = $repository->findOneBy(['id' => $id]);
 
         $form = $this->createForm(BookEditFormType::class, $book);
 
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()) {
             $cache = new FilesystemAdapter();
-            $cache->deleteItem('list_of_books');
+            $cache->deleteItem($this->getParameter("book_list_cache_name"));
 
-            /** @var Book $book */
-            $book = $form->getData();
+            /** @var Book $update */
+            $update = $form->getViewData();
+            $book =
+
+            dd($update);
+
+            //$book = $form->getData();
 
             $em->persist($book);
             $em->flush();
@@ -139,16 +151,87 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/delete/{id}", name="app_delete_book")
+     * @Route("/book/delete/{id}", name="app_delete_book", methods={"POST"})
      */
-    public function delete(Book $book, EntityManagerInterface $em)
+    public function bookDelete($id, Request $request, EntityManagerInterface $em)
     {
-        $em->remove($book);
-        $em->flush();
+        if($request->isXmlHttpRequest()) {
+            $repository = $em->getRepository(Book::class);
+            /** @var Book $book */
+            $book = $repository->findOneBy(['id' => $id]);
 
-        $cache = new FilesystemAdapter();
-        $cache->deleteItem('list_of_books');
+            $em->remove($book);
+            $em->flush();
 
-        return $this->redirectToRoute('app_homepage');
+            $cache = new FilesystemAdapter();
+            $cache->deleteItem($this->getParameter("book_list_cache_name"));
+
+            $this->addFlash('success', "Изменения внесены успешно!");
+
+            return new JsonResponse(["result" => "success"]);
+        } else {
+            return new JsonResponse(["result" => "error"]);
+        }
+    }
+
+    /**
+     * @Route("/book/file_delete/{id}", name="app_delete_file", methods={"POST"})
+     */
+    public function fileDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    {
+        if($request->isXmlHttpRequest()) {
+            $repository = $em->getRepository(Book::class);
+            /** @var Book $book */
+            $book = $repository->findOneBy(['id' => $id]);
+
+            $fileSrc = $this->getParameter("files_directory") . $book->getFile();
+
+            if($filesystem->exists($fileSrc)) {
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem($this->getParameter("book_list_cache_name"));
+
+                $filesystem->remove($fileSrc);
+
+                $book->setFile(null);
+                $em->persist($book);
+                $em->flush();
+
+                $this->addFlash('success', "Изменения внесены успешно!");
+            }
+            return new JsonResponse(["result" => "success"]);
+        } else {
+            return new JsonResponse(["result" => "error"]);
+        }
+    }
+
+    /**
+     * @Route("/book/image_delete/{id}", name="app_delete_image", methods={"POST"})
+     */
+    public function coverImageDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    {
+        if($request->isXmlHttpRequest()) {
+            $repository = $em->getRepository(Book::class);
+            /** @var Book $book */
+            $book = $repository->findOneBy(['id' => $id]);
+
+            $imageSrc = $this->getParameter("images_directory") . $book->getCoverImage();
+
+            if($filesystem->exists($imageSrc)) {
+                $cache = new FilesystemAdapter();
+                $cache->deleteItem($this->getParameter("book_list_cache_name"));
+
+                $filesystem->remove($imageSrc);
+
+                $book->setCoverImage(null);
+                $em->persist($book);
+                $em->flush();
+
+                $this->addFlash('success', "Изменения внесены успешно!");
+            }
+
+            return new JsonResponse(["result" => "success"]);
+        } else {
+            return new JsonResponse(["result" => "error"]);
+        }
     }
 }
