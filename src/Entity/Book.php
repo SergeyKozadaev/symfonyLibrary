@@ -45,10 +45,11 @@ class Book
     private $coverImage;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type = "string", length = 255, nullable = true)
      * @Assert\File(
-     *     mimeTypes={"application/pdf"},
-     *     maxSize="5Mi"
+     *     mimeTypes = {"application/pdf"},
+     *     maxSize = "5Mi",
+     *     groups = {"new"}
      * )
      */
     private $file;

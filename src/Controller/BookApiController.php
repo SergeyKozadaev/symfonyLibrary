@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,6 +34,12 @@ class BookApiController extends AbstractController
         return $jsonDecode->decode($dataSerialized, "json");
     }
 
+    private function clearCacheByKey(string $key)
+    {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem($key);
+    }
+
     /**
      * @Route("/api/v1/books", name="api_v1_books")
      */
@@ -53,13 +60,17 @@ class BookApiController extends AbstractController
             $books = $repository->findBy([], ['addedDate' => 'DESC']);
 
             foreach ($books as $book) {
-                if($book->isDownloadable()) {
-                    $book->setFile($this->getParameter('files_directory') . $book->getFile());
-                } else {
+                if(!$book->isDownloadable()) {
                     $book->setFile(null);
+                } elseif ($book->getFile()) {
+                    $fileSrc = $this->getParameter('public_directory') . $this->getParameter('files_directory') . $book->getFile();
+                    $book->setFile($fileSrc);
                 }
 
-                $book->setCoverImage($this->getParameter('images_directory') . $book->getCoverImage());
+                if($book->getCoverImage()) {
+                    $coverImageSrc = $this->getParameter('public_directory') . $this->getParameter('images_directory') . $book->getCoverImage();
+                    $book->setCoverImage($coverImageSrc);
+                }
             }
 
             $arData = [
@@ -74,15 +85,15 @@ class BookApiController extends AbstractController
     /**
      * @Route("/api/v1/books/{id}/edit", name="api_v1_books_edit")
      */
-    public function edit(Book $book, Request $request, EntityManagerInterface $em)
+    public function edit($id, Request $request, EntityManagerInterface $em)
     {
         $request = Request::create(
-            '/api/v1/books/42/edit',
+            '/api/v1/books/90/edit',
             'POST',
             [
                 "key" => "some_secret_key",
-                "title" => "Тонкое искусство пофигизма",
-                "author" => "",
+                "title" => "Тонкое искусство пофигизма qwqwq",
+                "author" => "Марк Мэнсон",
                 "addedDate" => "testing"
             ]
         );
@@ -93,28 +104,43 @@ class BookApiController extends AbstractController
                 "message" => "invalid api key"
             ];
         } else {
+            $repository = $em->getRepository(Book::class);
+            /** @var Book $book */
+            $book = $repository->findOneBy(['id' => $id]);
 
-            if($title = $request->get("title")) {
-                $book->setTitle($title);
+            if(!$book) {
+                $arData = [
+                    "status" => "error",
+                    "message" => "no such book to edit"
+                ];
+            } else {
+                if($title = $request->get("title")) {
+                    $book->setTitle($title);
+                }
+
+                if($author = $request->get("author")) {
+                    $book->setAuthor($author);
+                }
+
+                if($addedDate = $request->get("addedDate")) {
+                    $book->setAddedDate($addedDate instanceof \DateTime ?: new \DateTime());
+                }
+
+                if($downloadable = $request->get("downloadable")) {
+                    $book->setDownloadable($downloadable);
+                }
+
+                $em->persist($book);
+                $em->flush();
+
+                $this->clearCacheByKey($this->getParameter("list_cache_key"));
+
+                $arData = [
+                    "status" => "success",
+                    "message" => "The information has been updated."
+                ];
             }
-
-            if($author = $request->get("author")) {
-                $book->setAuthor($author);
-            }
-
-            if($addedDate = $request->get("addedDate")) {
-                $book->setAddedDate($addedDate instanceof \DateTime ?: new \DateTime());
-            }
-
-            $em->persist($book);
-            $em->flush();
-
-            $arData = [
-                "status" => "ok",
-                "message" => "The information has been updated."
-            ];
         }
-
         return new JsonResponse($this->formJsonResponce($arData));
     }
 
@@ -139,29 +165,35 @@ class BookApiController extends AbstractController
                 "status" => "error",
                 "message" => "invalid api key"
             ];
-        } elseif ($author = $request->get("author") && $title = $request->get("title")) {
-            $book = new Book();
-
-            $book->setTitle($title);
-            $book->setAuthor($author);
-
-            $addedDate = $request->get("addedDate") instanceof \DateTime ?: new \DateTime();
-            $book->setAddedDate($addedDate);
-
-            $em->persist($book);
-            $em->flush();
-
-            $arData = [
-                "status" => "ok",
-                "message" => "new book is added"
-            ];
         } else {
-            $arData = [
-                "status" => "error",
-                "message" => "no title and/or author parameters in your request"
-            ];
-        }
+            $author = $request->get("author");
+            $title = $request->get("title");
 
+            if (!$author || !$title ) {
+                $arData = [
+                    "status" => "error",
+                    "message" => "no title and/or author parameters found in request"
+                ];
+            } else {
+                $book = new Book();
+
+                $book->setTitle($title);
+                $book->setAuthor($author);
+
+                $addedDate = $request->get("addedDate") instanceof \DateTime ?: new \DateTime();
+                $book->setAddedDate($addedDate);
+
+                $em->persist($book);
+                $em->flush();
+
+                $this->clearCacheByKey($this->getParameter("list_cache_key"));
+
+                $arData = [
+                    "status" => "ok",
+                    "message" => "new book has been added"
+                ];
+            }
+        }
         return new JsonResponse($this->formJsonResponce($arData));
     }
 }

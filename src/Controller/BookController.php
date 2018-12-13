@@ -11,13 +11,32 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class BookController extends AbstractController
 {
+    private function checkUserAuthorisation()
+    {
+        if(!$this->isGranted('ROLE_USER')) {
+            $this->addFlash('warning', "Доступ для неавторизованного пользователя запрещен! Пожалуйста, авторизуйтесь.");
+            throw $this->createAccessDeniedException();
+        } else {
+            return true;
+        }
+    }
+
+    private function clearCacheByKey(string $key)
+    {
+        $cache = new FilesystemAdapter();
+        $cache->deleteItem($key);
+    }
+
+    private function getBookById($id, EntityManagerInterface $em){
+        $repository = $em->getRepository(Book::class);
+        return $repository->findOneBy(['id' => $id]);
+    }
 
     /**
      * @Route("/", name="app_homepage")
@@ -25,8 +44,7 @@ class BookController extends AbstractController
     public function list(BookRepository $repository)
     {
         $cache = new FilesystemAdapter();
-        //$cache->deleteItem($this->getParameter("book_list_cache_name"));
-        $cachedBooks = $cache->getItem($this->getParameter("book_list_cache_name"));
+        $cachedBooks = $cache->getItem($this->getParameter("list_cache_key"));
 
         if(!$cachedBooks->isHit()) {
             $books = $repository->findBy([], ['addedDate' => 'DESC']);
@@ -48,30 +66,31 @@ class BookController extends AbstractController
      */
     public function new(Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
     {
-        $form = $this->createForm(BookAddFormType::class);
+        $this->checkUserAuthorisation();
+
+        $form = $this->createForm(BookAddFormType::class, null, ["validation_groups" => ["new"]]);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
-            $cache = new FilesystemAdapter();
-            $cache->deleteItem($this->getParameter("book_list_cache_name"));
-
             /** @var Book $book */
             $book = $form->getData();
 
             if($file = $book->getFile()) {
                 $fileName = $fileUploader->upload($file, $this->getParameter('files_directory'));
-                $book->setFile($fileName ?: null);
+                $book->setFile($fileName );
             };
 
             if($image = $book->getCoverImage()) {
                 $imageName = $fileUploader->upload($image, $this->getParameter('images_directory'));
-                $book->setCoverImage($imageName ?: null);
+                $book->setCoverImage($imageName );
             }
 
             $em->persist($book);
             $em->flush();
 
             $this->addFlash('success', "Еще одна книга прочитана, отличная работа!");
+
+            $this->clearCacheByKey($this->getParameter("list_cache_key"));
 
             return $this->redirectToRoute('app_homepage');
         }
@@ -86,42 +105,22 @@ class BookController extends AbstractController
      */
     public function edit($id, Request $request, EntityManagerInterface $em)
     {
-        /*
-        if($book->getCoverImage() !== null) {
-            $book->setCoverImage(
-                new File($this->getParameter('images_directory') . $book->getCoverImage())
-            );
+        $this->checkUserAuthorisation();
+
+        if(!$book = $this->getBookById($id, $em)) {
+            throw $this->createNotFoundException(sprintf('Ошибка! Книга с id = %d не найдена.', $id));
         }
 
-        if($book->getFile() !== null) {
-            $book->setFile(
-                new File($this->getParameter('files_directory') . $book->getFile())
-            );
-        }
-        */
-        $repository = $em->getRepository(Book::class);
-        /** @var Book $book */
-        $book = $repository->findOneBy(['id' => $id]);
-
-        $form = $this->createForm(BookEditFormType::class, $book);
-
+        $form = $this->createForm(BookEditFormType::class, $book, ["validation_groups" => ["edit"]]);
         $form->handleRequest($request);
+
         if($form->isSubmitted() && $form->isValid()) {
-            $cache = new FilesystemAdapter();
-            $cache->deleteItem($this->getParameter("book_list_cache_name"));
-
-            /** @var Book $update */
-            $update = $form->getViewData();
-            $book =
-
-            dd($update);
-
-            //$book = $form->getData();
-
-            $em->persist($book);
+            $em->persist($form->getData());
             $em->flush();
 
             $this->addFlash('success', "Изменения внесены успешно!");
+
+            $this->clearCacheByKey($this->getParameter("list_cache_key"));
 
             return $this->redirectToRoute('app_homepage');
         }
@@ -133,44 +132,25 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/show/{id}", name="app_show_book")
-     */
-    public function show($id, EntityManagerInterface $em)
-    {
-        $repository = $em->getRepository(Book::class);
-        /** @var Book $book */
-        $book = $repository->findOneBy(['id' => $id]);
-
-        if(!$book) {
-            throw $this->createNotFoundException(sprintf('No book for id = %d', $id));
-        }
-
-        return $this->render('book/show.html.twig', [
-            'book' => $book
-        ]);
-    }
-
-    /**
      * @Route("/book/delete/{id}", name="app_delete_book", methods={"POST"})
      */
     public function bookDelete($id, Request $request, EntityManagerInterface $em)
     {
-        if($request->isXmlHttpRequest()) {
-            $repository = $em->getRepository(Book::class);
-            /** @var Book $book */
-            $book = $repository->findOneBy(['id' => $id]);
+        if(!$request->isXmlHttpRequest()) {
+            return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
+        } elseif(!$book = $this->getBookById($id, $em)) {
+            return new JsonResponse(["result" => "error", "message" => "no such book"]);
+        } else {
+            $message = "Книга: \"". $book->getTitle() ."\" успешно удалена!";
 
             $em->remove($book);
             $em->flush();
 
-            $cache = new FilesystemAdapter();
-            $cache->deleteItem($this->getParameter("book_list_cache_name"));
+            $this->clearCacheByKey($this->getParameter("list_cache_key"));
 
-            $this->addFlash('success', "Изменения внесены успешно!");
+            $this->addFlash('success', $message);
 
             return new JsonResponse(["result" => "success"]);
-        } else {
-            return new JsonResponse(["result" => "error"]);
         }
     }
 
@@ -179,28 +159,29 @@ class BookController extends AbstractController
      */
     public function fileDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
-        if($request->isXmlHttpRequest()) {
-            $repository = $em->getRepository(Book::class);
-            /** @var Book $book */
-            $book = $repository->findOneBy(['id' => $id]);
-
+        if(!$request->isXmlHttpRequest()) {
+            return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
+        } elseif(!$book = $this->getBookById($id, $em)) {
+            return new JsonResponse(["result" => "error", "message" => "no such book"]);
+        } else {
             $fileSrc = $this->getParameter("files_directory") . $book->getFile();
 
-            if($filesystem->exists($fileSrc)) {
-                $cache = new FilesystemAdapter();
-                $cache->deleteItem($this->getParameter("book_list_cache_name"));
-
+            if(!$filesystem->exists($fileSrc)) {
+                return new JsonResponse(["result" => "error", "message" => "no file found"]);
+            } else {
                 $filesystem->remove($fileSrc);
 
                 $book->setFile(null);
+                $book->setDownloadable(false);
                 $em->persist($book);
                 $em->flush();
 
-                $this->addFlash('success', "Изменения внесены успешно!");
+                $this->clearCacheByKey($this->getParameter("list_cache_key"));
+
+                $this->addFlash('success', "Текстовый файл книги: \"" . $book->getTitle() . "\" был успешно удален!");
+
+                return new JsonResponse(["result" => "success"]);
             }
-            return new JsonResponse(["result" => "success"]);
-        } else {
-            return new JsonResponse(["result" => "error"]);
         }
     }
 
@@ -209,29 +190,28 @@ class BookController extends AbstractController
      */
     public function coverImageDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
-        if($request->isXmlHttpRequest()) {
-            $repository = $em->getRepository(Book::class);
-            /** @var Book $book */
-            $book = $repository->findOneBy(['id' => $id]);
-
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
+        } elseif (!$book = $this->getBookById($id, $em)) {
+            return new JsonResponse(["result" => "error", "message" => "no such book"]);
+        } else {
             $imageSrc = $this->getParameter("images_directory") . $book->getCoverImage();
 
-            if($filesystem->exists($imageSrc)) {
-                $cache = new FilesystemAdapter();
-                $cache->deleteItem($this->getParameter("book_list_cache_name"));
-
+            if (!$filesystem->exists($imageSrc)) {
+                return new JsonResponse(["result" => "error", "message" => "no image found"]);
+            } else {
                 $filesystem->remove($imageSrc);
 
                 $book->setCoverImage(null);
                 $em->persist($book);
                 $em->flush();
 
-                $this->addFlash('success', "Изменения внесены успешно!");
-            }
+                $this->clearCacheByKey($this->getParameter("list_cache_key"));
 
-            return new JsonResponse(["result" => "success"]);
-        } else {
-            return new JsonResponse(["result" => "error"]);
+                $this->addFlash('success', "Обложка книги: \"" . $book->getTitle() . "\" была успешно удалена!");
+
+                return new JsonResponse(["result" => "success"]);
+            }
         }
     }
 }

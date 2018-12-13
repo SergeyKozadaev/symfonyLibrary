@@ -3,6 +3,7 @@
 {% block body %}
     <div class="container">
         <h2>Отредактируем данные книги!</h2>
+        <br>
 
         {{ form_errors(bookForm) }}
 
@@ -10,10 +11,22 @@
 
         <div class="left">
             {% if bookForm.coverImage.vars.data is not null  %}
+                {{ form_row(bookForm.coverImage, { 'attr':{'readonly':'readonly'} }) }}
                 <img src="{{ imgResize(bookForm.coverImage.vars.data, 240, 320) }}">
                 <br>
                 <br>
-                <a href="{{ path('app_delete_image', {id: id}) }}" class="btn btn-danger js-image-delete">Удалить файл обложки</a>
+                <a href="{{ path('app_delete_image', {id: id}) }}" class="btn btn-danger js-delete-image">Удалить файл обложки</a>
+            {% else %}
+                <img src="{{ asset('images/book.jpeg') }}">
+            {% endif %}
+
+            <br>
+            <br>
+
+            {% if bookForm.file.vars.data is not null  %}
+                {{ form_row(bookForm.file, { 'attr':{'readonly':'readonly'} }) }}
+                {{ form_row(bookForm.downloadable) }}
+                <a href="{{ path('app_delete_file', {id: id}) }}" class="btn btn-danger js-delete-file">Удалить файл книги</a>
             {% endif %}
         </div>
 
@@ -22,16 +35,9 @@
             {{ form_row(bookForm.author) }}
             {{ form_row(bookForm.addedDate) }}
 
-            {% if bookForm.file.vars.data is not null  %}
-                {{ form_row(bookForm.downloadable) }}
-                <a href="{{ path('app_delete_file', {id: id}) }}" class="btn btn-danger js-file-delete">Удалить файл книги</a>
-            {% else %}
+            <button type="submit" class="btn btn-primary">Обновить данные</button>
 
-            {% endif %}
-
-            <a href="{{ path('app_delete_book', {id: id}) }}" class="btn btn-danger js-book-delete">Удалить книгу</a>
-
-            <button type="submit" class="btn btn-primary">Обновить</button>
+            <a href="{{ path('app_delete_book', {id: id}) }}" class="btn btn-danger js-delete-book">Удалить книгу полностью</a>
         </div>
 
         {{ form_row(bookForm._token) }}

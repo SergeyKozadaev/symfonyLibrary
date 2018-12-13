@@ -54,6 +54,6 @@ class ImageResizeExtension extends AbstractExtension
             ;
         }
 
-        echo "/" . $resizeSrc;
+        echo $resizeSrc;
     }
 }

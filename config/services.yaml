@@ -6,13 +6,14 @@
 parameters:
     locale: 'ru'
 
+    public_directory: '%kernel.project_dir%/public/'
     images_directory: 'upload/images/'
     resize_images_directory: 'upload/resize_images/'
     files_directory: 'upload/files/'
 
     api_v1_key: 'some_secret_key'
 
-    book_list_cache_name: 'book_list'
+    list_cache_key: 'list of books'
 
 services:
     # default configuration for services in *this* file
