@@ -12,7 +12,9 @@
             {{ form_row(bookForm.coverImage) }}
             {{ form_row(bookForm.file) }}
 
-            <button type="submit" class="btn btn-primary">Добавить</button>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" id="_submit" name="_submit" value="Добавить книгу" />
+        </div>
         {{ form_end(bookForm) }}
     </div>
 {% endblock %}

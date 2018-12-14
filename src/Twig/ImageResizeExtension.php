@@ -2,7 +2,6 @@
 
 namespace App\Twig;
 
-use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -10,14 +9,12 @@ use Twig\TwigFunction;
 class ImageResizeExtension extends AbstractExtension
 {
     private $fileSystem;
-    private $imageResizeDir;
     private $imageDir;
 
-    public function __construct(Filesystem $fileSystem, $imageDir, $imageResizeDir)
+    public function __construct(Filesystem $fileSystem, $imageDir)
     {
         $this->fileSystem = $fileSystem;
         $this->imageDir = $imageDir;
-        $this->imageResizeDir = $imageResizeDir;
     }
 
     public function getFunctions()
@@ -35,25 +32,16 @@ class ImageResizeExtension extends AbstractExtension
 
     public function imageResize(string $imageSrc, int $width, int $height)
     {
-        $resizeName =  substr(strrchr($imageSrc, "/"), 1);
-        $resizeDir = $this->imageResizeDir . $width . "x" . $height . "/" . str_replace($resizeName, "", $imageSrc);
-        $resizeSrc = $resizeDir . $resizeName;
-
-        if(!$this->fileSystem->exists($resizeSrc)) {
-
-            if(!$this->fileSystem->exists($resizeDir)) {
-                $this->fileSystem->mkdir($resizeDir);
-            }
-
-            $manager = new ImageManager(['driver' => 'imagick']);
-
-            $manager
-                ->make($this->imageDir . $imageSrc)
-                ->resize($width, $height)
-                ->save($resizeSrc)
-            ;
+        $imagePath = $this->imageDir . $imageSrc;
+        if(!$this->fileSystem->exists($imagePath)) {
+            $imagePath = "/images/book.jpeg";
         }
 
-        echo $resizeSrc;
+        echo "
+                    <div class=\"img-container\" style=\"width: " . $width . "px; height: " . $height . "px\">
+                        <img src='". "/" . $imagePath . "'>
+                    </div>
+                 "
+        ;
     }
 }

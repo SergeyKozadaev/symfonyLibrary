@@ -45,11 +45,13 @@ class BookApiController extends AbstractController
      */
     public function books(Request $request, BookRepository $repository)
     {
+        /*
         $request = Request::create(
             '/api/v1/books',
             'POST',
             ["key" => "some_secret_key"]
         );
+        */
 
         if(!$this->checkApiKey($request)) {
             $arData = [
@@ -87,6 +89,7 @@ class BookApiController extends AbstractController
      */
     public function edit($id, Request $request, EntityManagerInterface $em)
     {
+        /*
         $request = Request::create(
             '/api/v1/books/90/edit',
             'POST',
@@ -97,6 +100,7 @@ class BookApiController extends AbstractController
                 "addedDate" => "testing"
             ]
         );
+        */
 
         if(!$this->checkApiKey($request)) {
             $arData = [
@@ -149,6 +153,7 @@ class BookApiController extends AbstractController
      */
     public function add(Request $request, EntityManagerInterface $em)
     {
+        /*
         $request = Request::create(
             '/api/v1/books/add',
             'POST',
@@ -159,6 +164,7 @@ class BookApiController extends AbstractController
                 "addedDate" => "testing"
             ]
         );
+        */
 
         if(!$this->checkApiKey($request)) {
             $arData = [

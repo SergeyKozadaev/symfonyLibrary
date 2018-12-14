@@ -12,10 +12,9 @@
         <div class="left">
             {% if bookForm.coverImage.vars.data is not null  %}
                 {{ form_row(bookForm.coverImage, { 'attr':{'readonly':'readonly'} }) }}
-                <img src="{{ imgResize(bookForm.coverImage.vars.data, 240, 320) }}">
-                <br>
-                <br>
-                <a href="{{ path('app_delete_image', {id: id}) }}" class="btn btn-danger js-delete-image">Удалить файл обложки</a>
+                {{ imgResize(bookForm.coverImage.vars.data, 240, 320) }}
+
+                <a href="{{ path('app_books_delete_image', {id: id}) }}" class="btn btn-danger js-delete-image">Удалить файл обложки</a>
             {% else %}
                 <img src="{{ asset('images/book.jpeg') }}">
             {% endif %}
@@ -26,7 +25,7 @@
             {% if bookForm.file.vars.data is not null  %}
                 {{ form_row(bookForm.file, { 'attr':{'readonly':'readonly'} }) }}
                 {{ form_row(bookForm.downloadable) }}
-                <a href="{{ path('app_delete_file', {id: id}) }}" class="btn btn-danger js-delete-file">Удалить файл книги</a>
+                <a href="{{ path('app_books_delete_file', {id: id}) }}" class="btn btn-danger js-delete-file">Удалить файл книги</a>
             {% endif %}
         </div>
 
@@ -35,9 +34,11 @@
             {{ form_row(bookForm.author) }}
             {{ form_row(bookForm.addedDate) }}
 
-            <button type="submit" class="btn btn-primary">Обновить данные</button>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" id="_submit" name="_submit" value="Обновить данные" />
+            </div>
 
-            <a href="{{ path('app_delete_book', {id: id}) }}" class="btn btn-danger js-delete-book">Удалить книгу полностью</a>
+            <a href="{{ path('app_books_delete_book', {id: id}) }}" class="btn btn-danger js-delete-book">Удалить книгу полностью</a>
         </div>
 
         {{ form_row(bookForm._token) }}

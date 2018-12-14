@@ -5,7 +5,7 @@
         <div class="container">
             <div class="left">
                 {% if book.coverImage %}
-                    <img src="{{ imgResize(book.coverImage, 240, 320) }}">
+                    {{ imgResize(book.coverImage, 240, 320) }}
                 {% else %}
                     <img src="{{ asset('images/book.jpeg') }}">
                 {% endif %}
@@ -19,7 +19,7 @@
 
                 <div class="right-buttons">
                     {% if is_granted('ROLE_USER') %}
-                        <a class="btn btn-primary" href="{{ path('app_edit_book', {id: book.id}) }}">Редактировать</a>
+                        <a class="btn btn-primary" href="{{ path('app_books_edit', {id: book.id}) }}">Редактировать</a>
                     {% endif %}
 
                     {% if book.downloadable and book.file %}

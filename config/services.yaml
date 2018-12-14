@@ -8,7 +8,6 @@ parameters:
 
     public_directory: '%kernel.project_dir%/public/'
     images_directory: 'upload/images/'
-    resize_images_directory: 'upload/resize_images/'
     files_directory: 'upload/files/'
 
     api_v1_key: 'some_secret_key'
@@ -44,7 +43,6 @@ services:
     App\Twig\ImageResizeExtension:
         tags: ['twig.extension']
         arguments:
-            $imageResizeDir: 'upload/resize_images/'
             $imageDir: 'upload/images/'
 
     App\EventListener\FileClearingSubscriber:

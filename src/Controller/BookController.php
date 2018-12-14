@@ -8,6 +8,7 @@ use App\Form\BookEditFormType;
 use App\Repository\BookRepository;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Filesystem\Filesystem;
@@ -17,16 +18,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BookController extends AbstractController
 {
-    private function checkUserAuthorisation()
-    {
-        if(!$this->isGranted('ROLE_USER')) {
-            $this->addFlash('warning', "Доступ для неавторизованного пользователя запрещен! Пожалуйста, авторизуйтесь.");
-            throw $this->createAccessDeniedException();
-        } else {
-            return true;
-        }
-    }
-
     private function clearCacheByKey(string $key)
     {
         $cache = new FilesystemAdapter();
@@ -44,6 +35,7 @@ class BookController extends AbstractController
     public function list(BookRepository $repository)
     {
         $cache = new FilesystemAdapter();
+        $this->clearCacheByKey($this->getParameter("list_cache_key"));
         $cachedBooks = $cache->getItem($this->getParameter("list_cache_key"));
 
         if(!$cachedBooks->isHit()) {
@@ -62,12 +54,11 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/new", name="app_new_book")
+     * @Route("/books/add", name="app_books_add")
+     * @IsGranted("ROLE_USER")
      */
-    public function new(Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
+    public function add(Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
     {
-        $this->checkUserAuthorisation();
-
         $form = $this->createForm(BookAddFormType::class, null, ["validation_groups" => ["new"]]);
         $form->handleRequest($request);
 
@@ -101,12 +92,11 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/edit/{id}", name="app_edit_book")
+     * @Route("/books/{id}/edit", name="app_books_edit")
+     * @IsGranted("ROLE_USER")
      */
     public function edit($id, Request $request, EntityManagerInterface $em)
     {
-        $this->checkUserAuthorisation();
-
         if(!$book = $this->getBookById($id, $em)) {
             throw $this->createNotFoundException(sprintf('Ошибка! Книга с id = %d не найдена.', $id));
         }
@@ -132,9 +122,10 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/delete/{id}", name="app_delete_book", methods={"POST"})
+     * @Route("/books/{id}/delete_book", name="app_books_delete_book", methods={"POST"})
+     * @IsGranted("ROLE_USER")
      */
-    public function bookDelete($id, Request $request, EntityManagerInterface $em)
+    public function deleteBook($id, Request $request, EntityManagerInterface $em)
     {
         if(!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
@@ -155,9 +146,10 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/file_delete/{id}", name="app_delete_file", methods={"POST"})
+     * @Route("/books/{id}/delete_file", name="app_books_delete_file", methods={"POST"})
+     * @IsGranted("ROLE_USER")
      */
-    public function fileDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    public function deleteFile($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
         if(!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
@@ -186,9 +178,10 @@ class BookController extends AbstractController
     }
 
     /**
-     * @Route("/book/image_delete/{id}", name="app_delete_image", methods={"POST"})
+     * @Route("/books/{id}/delete_image", name="app_books_delete_image", methods={"POST"})
+     * @IsGranted("ROLE_USER")
      */
-    public function coverImageDelete($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    public function deleteCoverImage($id, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
         if (!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);

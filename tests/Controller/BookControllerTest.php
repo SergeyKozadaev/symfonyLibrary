@@ -5,50 +5,47 @@ namespace App\Tests\Controller;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class BookControllerTest extends WebTestCase
-{
-    //private $client;
-    //private $entityManager;
+{/*
+    const USERNAME = "test1";
+    const PASSWORD = "test1";
 
-    public function __construct(?string $name = null, array $data = [], string $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        //$this->client = static::createClient();
-        $kernel = self::bootKernel();
-        //$this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
-    }
-
-
-
-    public function testUserLogin()
+    public function testBookAdd()
     {
         $client = $this->createClient();
 
         $crawler = $client->request('GET', '/login');
 
-        $form = $crawler
+        $loginForm = $crawler
             ->selectButton('_submit')
             ->form([
-                '_username' => 'test1',
-                '_password' => 'test1'
+                '_username' => self::USERNAME,
+                '_password' => self::PASSWORD
             ])
         ;
 
-        $client->submit($form);
+        $client->submit($loginForm);
         $this->assertTrue($client->getResponse()->isRedirect());
+
         $crawler = $client->followRedirect();
+        $link = $crawler->filter('a:contains("Добавить книгу")');
+        $this->assertGreaterThan(0, $link->count());
 
-        //dump($crawler);
-        $this->assertGreaterThan(0, $crawler->filter('a:contains("Выйти")')->count());
-    }
+        $crawler = $client->click($link->link());
+        $this->assertGreaterThan(0, $crawler->filter('h2:contains("Добавим новую книгу!")')->count());
 
-/*
-    public function testShowList()
-    {
-        $client = $this->createClient();
+        $bookAddForm = $crawler
+            ->selectButton('_submit')
+            ->form([
+                'book_add_form[title]' => 'Название книги ТЕСТ',
+                'book_add_form[author]' => 'Автор книги ТЕСТ'
+            ])
+        ;
 
-        $crawler = $client->request('GET', '/book/new');
+        $client->submit($bookAddForm);
+        $this->assertTrue($client->getResponse()->isRedirect());
 
-        $this->assertEquals(302, $client->getResponse()->getStatusCode());
+        $crawler = $client->followRedirect();
+        $this->assertGreaterThan(0, $crawler->filter('h3:contains("Название книги ТЕСТ")')->count());
     }
 */
 }
