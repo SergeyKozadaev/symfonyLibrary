@@ -6,9 +6,9 @@
 parameters:
     locale: 'ru'
 
-    public_directory: '%kernel.project_dir%/public/'
     images_directory: 'upload/images/'
     files_directory: 'upload/files/'
+    public_directory: '%kernel.project_dir%/public/'
 
     api_v1_key: 'some_secret_key'
 
@@ -49,5 +49,6 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default}
         arguments:
-            $imageDir: 'upload/images/'
+            $imagesDir: 'upload/images/'
             $filesDir: 'upload/files/'
+            $publicDir: '%kernel.project_dir%/public/'

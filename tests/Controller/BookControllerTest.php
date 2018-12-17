@@ -5,7 +5,7 @@ namespace App\Tests\Controller;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class BookControllerTest extends WebTestCase
-{/*
+{
     const USERNAME = "test1";
     const PASSWORD = "test1";
 
@@ -47,5 +47,4 @@ class BookControllerTest extends WebTestCase
         $crawler = $client->followRedirect();
         $this->assertGreaterThan(0, $crawler->filter('h3:contains("Название книги ТЕСТ")')->count());
     }
-*/
 }

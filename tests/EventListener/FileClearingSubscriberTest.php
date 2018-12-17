@@ -3,12 +3,13 @@
 namespace App\Tests\EventListener;
 
 use App\Entity\Book;
+use App\EventListener\FileClearingSubscriber;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
 class FileClearingSubscriberTest extends WebTestCase
 {
-    const BOOK_ID = 236;
+    const BOOK_ID = 243;
     private $entityManager;
     private $filesDir;
     private $imagesDir;
@@ -31,31 +32,25 @@ class FileClearingSubscriberTest extends WebTestCase
         $repository = $this->entityManager->getRepository(Book::class);
         $book = $repository->findOneBy(['id' => self::BOOK_ID]);
 
-        $this->assertTrue($book !== null);
+        $this->assertTrue($book !== null, "Нет книги с id = " . self::BOOK_ID);
 
         $file = $book->getFile();
         $image = $book->getCoverImage();
 
-        // иначе detached entity cannot be removed
-        //$bookManaged = $this->entityManager->merge($book);
-        $this->entityManager->remove($book);
-        $this->entityManager->flush();
+        $fileClearingHandler = new FileClearingSubscriber($this->imagesDir, $this->filesDir, $this->publicDir);
+        $fileClearingHandler->clear($book);
 
         $fileSystem = new Filesystem();
 
         if($file !== null) {
-            dump("public/" . $this->filesDir . $file);
-            $this->assertTrue(!$fileSystem->exists("public/" . $this->filesDir . $file));
+            $fileSrc = $this->publicDir . $this->filesDir . $file;
+            $this->assertTrue(!$fileSystem->exists($fileSrc), "Файл книги не удален, путь: " . $fileSrc);
         }
 
         if($image !== null) {
-            dump("public/" . $this->imagesDir . $image);
-            $this->assertTrue(!$fileSystem->exists("public/" . $this->imagesDir . $image));
+            $imageSrc = $this->publicDir . $this->imagesDir . $image;
+            $this->assertTrue(!$fileSystem->exists($imageSrc), "Обложка книги не удалена, путь: " . $fileSrc);
         }
-
-        $book = $repository->findOneBy(['id' => self::BOOK_ID]);
-
-        $this->assertTrue($book === null);
     }
 
 }

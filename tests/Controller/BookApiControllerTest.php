@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class BookApiControllerTest extends WebTestCase
 {
-    /*
     const TEST_API_KEY = "some_secret_key";
 
     public function testBookAdd()
@@ -32,5 +31,4 @@ class BookApiControllerTest extends WebTestCase
 
         $this->assertContains('"status":"ok"', $response->getContent());
     }
-*/
 }
