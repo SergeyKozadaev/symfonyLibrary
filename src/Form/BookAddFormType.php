@@ -24,7 +24,8 @@ class BookAddFormType extends AbstractType
             ])
             ->add('addedDate', DateTimeType::class, [
                 'data' => new \DateTime(),
-                'label' => 'Дата прочтения'
+                'label' => 'Дата прочтения',
+                'choice_translation_domain' => 'forms'
             ])
             ->add('downloadable', CheckboxType::class, [
                 'required' => false,

@@ -6,6 +6,7 @@
 parameters:
     locale: 'ru'
 
+    stub_image: 'images/book.jpeg'
     images_directory: 'upload/images/'
     files_directory: 'upload/files/'
     public_directory: '%kernel.project_dir%/public/'
@@ -38,17 +39,14 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     App\Service\FileUploader:
-        arguments:
 
     App\Twig\ImageResizeExtension:
         tags: ['twig.extension']
-        arguments:
-            $imageDir: 'upload/images/'
 
     App\EventListener\FileClearingSubscriber:
         tags:
             - { name: doctrine.event_subscriber, connection: default}
         arguments:
-            $imagesDir: 'upload/images/'
-            $filesDir: 'upload/files/'
-            $publicDir: '%kernel.project_dir%/public/'
+            $imagesDir: '%images_directory%'
+            $filesDir: '%files_directory%'
+            $publicDir: '%public_directory%'

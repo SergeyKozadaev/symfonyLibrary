@@ -36,9 +36,8 @@ class FileClearingSubscriber implements EventSubscriber
 
     public function clear($entity)
     {
-        $filesystem = new Filesystem();
-
         if($entity instanceof Book) {
+            $filesystem = new Filesystem();
 
             $fileSrc = $this->publicDir . $this->filesDir . $entity->getFile();
             if($entity->getFile() && $filesystem->exists($fileSrc)) {
@@ -49,6 +48,8 @@ class FileClearingSubscriber implements EventSubscriber
             if($entity->getCoverImage() && $filesystem->exists($imageSrc)) {
                 $filesystem->remove($imageSrc);
             }
+        } else {
+            return;
         }
     }
 

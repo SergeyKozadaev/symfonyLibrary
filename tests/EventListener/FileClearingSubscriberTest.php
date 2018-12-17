@@ -9,7 +9,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class FileClearingSubscriberTest extends WebTestCase
 {
-    const BOOK_ID = 243;
+    const BOOK_ID = 250;
     private $entityManager;
     private $filesDir;
     private $imagesDir;
@@ -44,12 +44,12 @@ class FileClearingSubscriberTest extends WebTestCase
 
         if($file !== null) {
             $fileSrc = $this->publicDir . $this->filesDir . $file;
-            $this->assertTrue(!$fileSystem->exists($fileSrc), "Файл книги не удален, путь: " . $fileSrc);
+            $this->assertTrue(!$fileSystem->exists($fileSrc), "");
         }
 
         if($image !== null) {
             $imageSrc = $this->publicDir . $this->imagesDir . $image;
-            $this->assertTrue(!$fileSystem->exists($imageSrc), "Обложка книги не удалена, путь: " . $fileSrc);
+            $this->assertTrue(!$fileSystem->exists($imageSrc));
         }
     }
 

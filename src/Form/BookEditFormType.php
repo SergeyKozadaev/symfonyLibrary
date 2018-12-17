@@ -6,7 +6,6 @@ use App\Entity\Book;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -23,7 +22,8 @@ class BookEditFormType extends AbstractType
                 'label' => 'Автор'
             ])
             ->add('addedDate', DateTimeType::class, [
-                'label' => 'Дата прочтения'
+                'label' => 'Дата прочтения',
+                'choice_translation_domain' => 'forms'
             ])
             ->add('downloadable', CheckboxType::class, [
                 'required' => false,

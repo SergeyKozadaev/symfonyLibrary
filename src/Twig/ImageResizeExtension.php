@@ -2,6 +2,7 @@
 
 namespace App\Twig;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -9,12 +10,12 @@ use Twig\TwigFunction;
 class ImageResizeExtension extends AbstractExtension
 {
     private $fileSystem;
-    private $imageDir;
+    private $params;
 
-    public function __construct(Filesystem $fileSystem, $imageDir)
+    public function __construct(Filesystem $fileSystem, ContainerBagInterface $bag)
     {
         $this->fileSystem = $fileSystem;
-        $this->imageDir = $imageDir;
+        $this->params = $bag;
     }
 
     public function getFunctions()
@@ -32,9 +33,9 @@ class ImageResizeExtension extends AbstractExtension
 
     public function imageResize(string $imageSrc, int $width, int $height)
     {
-        $imagePath = $this->imageDir . $imageSrc;
+        $imagePath = $this->params->get('images_directory') . $imageSrc;
         if(!$this->fileSystem->exists($imagePath)) {
-            $imagePath = "/images/book.jpeg";
+            $imagePath = $this->params->get('stub_image');
         }
 
         echo "

@@ -14,6 +14,8 @@
                 {{ form_row(bookForm.coverImage, { 'attr':{'readonly':'readonly'} }) }}
                 {{ imgResize(bookForm.coverImage.vars.data, 240, 320) }}
 
+                <br>
+
                 <a href="{{ path('app_books_delete_image', {id: id}) }}" class="btn btn-danger js-delete-image">Удалить файл обложки</a>
             {% else %}
                 <img src="{{ asset('images/book.jpeg') }}">

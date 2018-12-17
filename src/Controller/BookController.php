@@ -35,7 +35,7 @@ class BookController extends AbstractController
     public function list(BookRepository $repository)
     {
         $cache = new FilesystemAdapter();
-        $this->clearCacheByKey($this->getParameter("list_cache_key"));
+        //$this->clearCacheByKey($this->getParameter("list_cache_key"));
         $cachedBooks = $cache->getItem($this->getParameter("list_cache_key"));
 
         if(!$cachedBooks->isHit()) {
