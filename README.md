@@ -1,2 +1,2 @@
-# symfonyLibrary
-symfony personal library test task
+# symfony
+learning symfony 4.1*
