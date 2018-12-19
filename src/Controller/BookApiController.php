@@ -6,7 +6,6 @@ use App\Entity\Book;
 use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,25 +33,11 @@ class BookApiController extends AbstractController
         return $jsonDecode->decode($dataSerialized, "json");
     }
 
-    private function clearCacheByKey(string $key)
-    {
-        $cache = new FilesystemAdapter();
-        $cache->deleteItem($key);
-    }
-
     /**
      * @Route("/api/v1/books", name="api_v1_books")
      */
     public function books(Request $request, BookRepository $repository)
     {
-        /*
-        $request = Request::create(
-            '/api/v1/books',
-            'POST',
-            ["key" => "some_secret_key"]
-        );
-        */
-
         if(!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
@@ -87,21 +72,8 @@ class BookApiController extends AbstractController
     /**
      * @Route("/api/v1/books/{id}/edit", name="api_v1_books_edit")
      */
-    public function edit($id, Request $request, EntityManagerInterface $em)
+    public function edit($id, $cache, Request $request, EntityManagerInterface $em)
     {
-        /*
-        $request = Request::create(
-            '/api/v1/books/90/edit',
-            'POST',
-            [
-                "key" => "some_secret_key",
-                "title" => "Тонкое искусство пофигизма qwqwq",
-                "author" => "Марк Мэнсон",
-                "addedDate" => "testing"
-            ]
-        );
-        */
-
         if(!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
@@ -137,7 +109,7 @@ class BookApiController extends AbstractController
                 $em->persist($book);
                 $em->flush();
 
-                $this->clearCacheByKey($this->getParameter("list_cache_key"));
+                $cache->invalidateTags([$this->getParameter("list_cache_key")]);
 
                 $arData = [
                     "status" => "success",
@@ -151,21 +123,8 @@ class BookApiController extends AbstractController
     /**
      * @Route("/api/v1/books/add", name="api_v1_books_add")
      */
-    public function add(Request $request, EntityManagerInterface $em)
+    public function add($cache, Request $request, EntityManagerInterface $em)
     {
-        /*
-        $request = Request::create(
-            '/api/v1/books/add',
-            'POST',
-            [
-                "key" => "some_secret_key",
-                "title" => "qwertyyy",
-                "author" => "Новый автор",
-                "addedDate" => "testing"
-            ]
-        );
-        */
-
         if(!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
@@ -192,7 +151,7 @@ class BookApiController extends AbstractController
                 $em->persist($book);
                 $em->flush();
 
-                $this->clearCacheByKey($this->getParameter("list_cache_key"));
+                $cache->invalidateTags([$this->getParameter("list_cache_key")]);
 
                 $arData = [
                     "status" => "ok",

@@ -34,15 +34,16 @@ class ImageResizeExtension extends AbstractExtension
     public function imageResize(string $imageSrc, int $width, int $height)
     {
         $imagePath = $this->params->get('images_directory') . $imageSrc;
+        $imgContainerStyles = "position: relative; overflow: hidden; width: " . $width . "px; height: " . $height . "px";
+        $imgStyles = "position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: 100%";
+
         if(!$this->fileSystem->exists($imagePath)) {
             $imagePath = $this->params->get('stub_image');
         }
 
-        echo "
-                    <div class=\"img-container\" style=\"width: " . $width . "px; height: " . $height . "px\">
-                        <img src='". "/" . $imagePath . "'>
-                    </div>
-                 "
+        echo "<div class=\"img-container\" style='" . $imgContainerStyles . "'>
+                <img src='". "/" . $imagePath . "' style='" . $imgStyles . "'>
+              </div>"
         ;
     }
 }
