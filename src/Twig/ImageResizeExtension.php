@@ -41,9 +41,11 @@ class ImageResizeExtension extends AbstractExtension
             $imagePath = $this->params->get('stub_image');
         }
 
-        echo "<div class=\"img-container\" style='" . $imgContainerStyles . "'>
-                <img src='". "/" . $imagePath . "' style='" . $imgStyles . "'>
-              </div>"
+        $htmlOutput = "<div class=\"img-container\" style='" . $imgContainerStyles . "'>
+                        <img src='". "/" . $imagePath . "' style='" . $imgStyles . "'>
+                       </div>"
         ;
+
+        return $htmlOutput;
     }
 }
