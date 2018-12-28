@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +21,8 @@ class BookController extends Controller
 {
     const ITEMS_PER_PAGE = 2;
 
-    private function getBookById($id, EntityManagerInterface $em){
+    private function getBookById($id, EntityManagerInterface $em)
+    {
         $repository = $em->getRepository(Book::class);
         return $repository->findOneBy(['id' => $id]);
     }
@@ -28,12 +30,12 @@ class BookController extends Controller
     /**
      * @Route("/", name="app_homepage")
      */
-    public function list($cache, Request $request, BookRepository $repository, PaginatorInterface $paginator)
+    public function list(TagAwareAdapter $cache, Request $request, BookRepository $repository, PaginatorInterface $paginator)
     {
         $pageNumber = $request->query->getInt('page', 1);
         $cacheItem = $cache->getItem("page_" . $pageNumber);
 
-        if(!$cacheItem->isHit()) {
+        if (!$cacheItem->isHit()) {
 
             $books = $paginator->paginate(
                 $repository->getFindAllQuery(),
@@ -49,7 +51,7 @@ class BookController extends Controller
         }
 
         return $this->render('book/list.html.twig', [
-           'books' => $books
+            'books' => $books
         ]);
     }
 
@@ -57,23 +59,23 @@ class BookController extends Controller
      * @Route("/books/add", name="app_books_add")
      * @IsGranted("ROLE_USER")
      */
-    public function add($cache, Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
+    public function add(TagAwareAdapter $cache, Request $request, EntityManagerInterface $em, FileUploader $fileUploader)
     {
         $form = $this->createForm(BookAddFormType::class, null, ["validation_groups" => ["new"]]);
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             /** @var Book $book */
             $book = $form->getData();
 
-            if($file = $book->getFile()) {
+            if ($file = $book->getFile()) {
                 $fileName = $fileUploader->upload($file, $this->getParameter('files_directory'));
-                $book->setFile($fileName );
+                $book->setFile($fileName);
             };
 
-            if($image = $book->getCoverImage()) {
+            if ($image = $book->getCoverImage()) {
                 $imageName = $fileUploader->upload($image, $this->getParameter('images_directory'));
-                $book->setCoverImage($imageName );
+                $book->setCoverImage($imageName);
             }
 
             $em->persist($book);
@@ -95,12 +97,12 @@ class BookController extends Controller
      * @Route("/books/{id}/edit", name="app_books_edit")
      * @IsGranted("ROLE_USER")
      */
-    public function edit($id, $cache, Book $book, Request $request, EntityManagerInterface $em)
+    public function edit($id, TagAwareAdapter $cache, Book $book, Request $request, EntityManagerInterface $em)
     {
         $form = $this->createForm(BookEditFormType::class, $book, ["validation_groups" => ["edit"]]);
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($form->getData());
             $em->flush();
 
@@ -121,14 +123,14 @@ class BookController extends Controller
      * @Route("/books/{id}/delete_book", name="app_books_delete_book", methods={"POST"})
      * @IsGranted("ROLE_USER")
      */
-    public function deleteBook($id, $cache, Request $request, EntityManagerInterface $em)
+    public function deleteBook($id, TagAwareAdapter $cache, Request $request, EntityManagerInterface $em)
     {
-        if(!$request->isXmlHttpRequest()) {
+        if (!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
-        } elseif(!$book = $this->getBookById($id, $em)) {
+        } elseif (!$book = $this->getBookById($id, $em)) {
             return new JsonResponse(["result" => "error", "message" => "no such book"]);
         } else {
-            $message = "Книга: \"". $book->getTitle() ."\" успешно удалена!";
+            $message = "Книга: \"" . $book->getTitle() . "\" успешно удалена!";
 
             $em->remove($book);
             $em->flush();
@@ -145,16 +147,16 @@ class BookController extends Controller
      * @Route("/books/{id}/delete_file", name="app_books_delete_file", methods={"POST"})
      * @IsGranted("ROLE_USER")
      */
-    public function deleteFile($id, $cache, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    public function deleteFile($id, TagAwareAdapter $cache, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
-        if(!$request->isXmlHttpRequest()) {
+        if (!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);
-        } elseif(!$book = $this->getBookById($id, $em)) {
+        } elseif (!$book = $this->getBookById($id, $em)) {
             return new JsonResponse(["result" => "error", "message" => "no such book"]);
         } else {
             $fileSrc = $this->getParameter("files_directory") . $book->getFile();
 
-            if(!$filesystem->exists($fileSrc)) {
+            if (!$filesystem->exists($fileSrc)) {
                 return new JsonResponse(["result" => "error", "message" => "no file found"]);
             } else {
                 $filesystem->remove($fileSrc);
@@ -177,7 +179,7 @@ class BookController extends Controller
      * @Route("/books/{id}/delete_image", name="app_books_delete_image", methods={"POST"})
      * @IsGranted("ROLE_USER")
      */
-    public function deleteCoverImage($id, $cache, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
+    public function deleteCoverImage($id, TagAwareAdapter $cache, Request $request, Filesystem $filesystem, EntityManagerInterface $em)
     {
         if (!$request->isXmlHttpRequest()) {
             return new JsonResponse(["result" => "error", "message" => "need AJAX request"]);

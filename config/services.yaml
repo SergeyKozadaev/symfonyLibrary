@@ -29,6 +29,8 @@ services:
         class: Symfony\Component\Cache\Adapter\TagAwareAdapter
         arguments: ['@app.cache.file']
 
+    Symfony\Component\Cache\Adapter\TagAwareAdapter: '@myapp.cache'
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -40,14 +42,6 @@ services:
     App\Controller\:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
-
-    App\Controller\BookController:
-        bind:
-            $cache: '@myapp.cache'
-
-    App\Controller\BookApiController:
-        bind:
-            $cache: '@myapp.cache'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

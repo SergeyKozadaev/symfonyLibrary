@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +22,7 @@ class BookApiController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    private  function checkApiKey(Request $request)
+    private function checkApiKey(Request $request)
     {
         return $request->get("key") === $this->getParameter("api_v1_key") ? true : false;
     }
@@ -38,7 +39,7 @@ class BookApiController extends AbstractController
      */
     public function books(Request $request, BookRepository $repository)
     {
-        if(!$this->checkApiKey($request)) {
+        if (!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
                 "message" => "invalid api key"
@@ -47,14 +48,14 @@ class BookApiController extends AbstractController
             $books = $repository->findBy([], ['addedDate' => 'DESC']);
 
             foreach ($books as $book) {
-                if(!$book->isDownloadable()) {
+                if (!$book->isDownloadable()) {
                     $book->setFile(null);
                 } elseif ($book->getFile()) {
                     $fileSrc = $this->getParameter('public_directory') . $this->getParameter('files_directory') . $book->getFile();
                     $book->setFile($fileSrc);
                 }
 
-                if($book->getCoverImage()) {
+                if ($book->getCoverImage()) {
                     $coverImageSrc = $this->getParameter('public_directory') . $this->getParameter('images_directory') . $book->getCoverImage();
                     $book->setCoverImage($coverImageSrc);
                 }
@@ -72,9 +73,9 @@ class BookApiController extends AbstractController
     /**
      * @Route("/api/v1/books/{id}/edit", name="api_v1_books_edit")
      */
-    public function edit($id, $cache, Request $request, EntityManagerInterface $em)
+    public function edit($id, TagAwareAdapter $cache, Request $request, EntityManagerInterface $em)
     {
-        if(!$this->checkApiKey($request)) {
+        if (!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
                 "message" => "invalid api key"
@@ -84,25 +85,25 @@ class BookApiController extends AbstractController
             /** @var Book $book */
             $book = $repository->findOneBy(['id' => $id]);
 
-            if(!$book) {
+            if (!$book) {
                 $arData = [
                     "status" => "error",
                     "message" => "no such book to edit"
                 ];
             } else {
-                if($title = $request->get("title")) {
+                if ($title = $request->get("title")) {
                     $book->setTitle($title);
                 }
 
-                if($author = $request->get("author")) {
+                if ($author = $request->get("author")) {
                     $book->setAuthor($author);
                 }
 
-                if($addedDate = $request->get("addedDate")) {
+                if ($addedDate = $request->get("addedDate")) {
                     $book->setAddedDate($addedDate instanceof \DateTime ?: new \DateTime());
                 }
 
-                if($downloadable = $request->get("downloadable")) {
+                if ($downloadable = $request->get("downloadable")) {
                     $book->setDownloadable($downloadable);
                 }
 
@@ -123,9 +124,9 @@ class BookApiController extends AbstractController
     /**
      * @Route("/api/v1/books/add", name="api_v1_books_add")
      */
-    public function add($cache, Request $request, EntityManagerInterface $em)
+    public function add(TagAwareAdapter $cache, Request $request, EntityManagerInterface $em)
     {
-        if(!$this->checkApiKey($request)) {
+        if (!$this->checkApiKey($request)) {
             $arData = [
                 "status" => "error",
                 "message" => "invalid api key"
@@ -134,7 +135,7 @@ class BookApiController extends AbstractController
             $author = $request->get("author");
             $title = $request->get("title");
 
-            if (!$author || !$title ) {
+            if (!$author || !$title) {
                 $arData = [
                     "status" => "error",
                     "message" => "no title and/or author parameters found in request"
