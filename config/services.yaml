@@ -6,12 +6,12 @@
 parameters:
     locale: 'ru'
 
+    api_key: '%env(API_V1_KEY)'
+
     stub_image: 'images/book.jpeg'
     images_directory: 'upload/images/'
     files_directory: 'upload/files/'
     public_directory: '%kernel.project_dir%/public/'
-
-    api_v1_key: 'some_secret_key'
 
     list_cache_key: 'list_of_books'
 

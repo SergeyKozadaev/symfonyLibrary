@@ -24,7 +24,7 @@ class BookApiController extends AbstractController
 
     private function checkApiKey(Request $request)
     {
-        return $request->get("key") === $this->getParameter("api_v1_key") ? true : false;
+        return $request->get("key") === $this->getParameter("api_key") ? true : false;
     }
 
     private function formJsonResponce($arData)
