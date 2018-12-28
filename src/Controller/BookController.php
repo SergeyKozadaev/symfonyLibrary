@@ -19,8 +19,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BookController extends Controller
 {
-    const ITEMS_PER_PAGE = 2;
-
     private function getBookById($id, EntityManagerInterface $em)
     {
         $repository = $em->getRepository(Book::class);
@@ -40,7 +38,7 @@ class BookController extends Controller
             $books = $paginator->paginate(
                 $repository->getFindAllQuery(),
                 $pageNumber,
-                self::ITEMS_PER_PAGE
+                $this->getParameter("items_per_page")
             );
 
             $cacheItem->set($books);
