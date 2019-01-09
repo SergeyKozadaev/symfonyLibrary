@@ -2,12 +2,12 @@
 
 {% block body %}
     {% for book in books %}
-        <div class="container">
+        <div class="container" id="{{ book.id }}">
             <div class="left">
                 {% if book.coverImage %}
                     {{ imgResize(book.coverImage, 240, 320) }}
                 {% else %}
-                    <img src="{{ asset('images/book.jpeg') }}">
+                    <img src="{{ asset(stub_image) }}">
                 {% endif %}
             </div>
 
@@ -15,11 +15,11 @@
                 <h3>{{ book.title }}</h3>
                 <p>{{ book.author }}</p>
 
-                <p>{{ book.addedDate|ago }} ( {{ book.addedDate|date('d.m.Y H:i') }} )</p>
+                <p>{{ book.addedDate|ago }} ( {{ book.addedDate|date('d.m.Y H:i:s') }} )</p>
 
                 <div class="right-buttons">
                     {% if is_granted('ROLE_USER') %}
-                        <a class="btn btn-primary" href="{{ path('app_books_edit', {id: book.id}) }}">Редактировать</a>
+                        <a class="btn btn-primary" name="book_edit" href="{{ path('app_books_edit', {id: book.id}) }}">Редактировать</a>
                     {% endif %}
 
                     {% if book.downloadable and book.file %}

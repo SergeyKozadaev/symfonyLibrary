@@ -2,13 +2,23 @@
 
 namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\AppBasicTest;
 
-class BookApiControllerTest extends WebTestCase
+class BookApiControllerTest extends AppBasicTest
 {
-    const TEST_API_KEY = "some_secret_key";
+    private $apiKey;
 
-    public function testBookAdd()
+    public function __construct(?string $name = null, array $data = [], string $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+
+        $kernel = self::bootKernel();
+        $this->apiKey = $kernel->getContainer()->getParameter('app.api_key');
+
+        $this->userStr = 'Api'.$this->userStr;
+    }
+
+    protected function checkBookAdd()
     {
         $client = $this->createClient();
 
@@ -16,10 +26,10 @@ class BookApiControllerTest extends WebTestCase
             'POST',
             '/api/v1/books/add',
             [
-                "key" => self::TEST_API_KEY,
-                "title" => "Название книги API TEST",
-                "author" => "Автор книги API TEST",
-                "addedDate" => "no proper date"
+                'key' => $this->apiKey,
+                'title' => $this->userStr,
+                'author' => $this->userStr,
+                'addedDate' => '',
             ]
         );
 
@@ -30,5 +40,10 @@ class BookApiControllerTest extends WebTestCase
         $this->assertTrue($response->headers->contains('Content-Type', 'application/json'));
 
         $this->assertContains('"status":"ok"', $response->getContent());
+    }
+
+    public function testBookAdd()
+    {
+        $this->checkBookAdd();
     }
 }

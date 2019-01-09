@@ -21,15 +21,17 @@
         </div>
 
         <div class="body">
-            <div class="container">
-                {% for label, messages in app.flashes(['success', 'warning']) %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ label }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {%  endfor %}
-            </div>
+            {% if app.session.flashbag.peekAll() is not empty %}
+                <div class="container">
+                    {% for label, messages in app.flashes(['success', 'warning']) %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {%  endfor %}
+                </div>
+            {% endif %}
 
             {% block body %}
             {% endblock %}

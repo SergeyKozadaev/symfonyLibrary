@@ -24,14 +24,15 @@ class BookApiController extends AbstractController
 
     private function checkApiKey(Request $request)
     {
-        return $request->get("key") === $this->getParameter("api_key") ? true : false;
+        return $request->get('key') === $this->getParameter('app.api_key') ? true : false;
     }
 
     private function formJsonResponce($arData)
     {
-        $dataSerialized = $this->serializer->serialize($arData, "json");
+        $dataSerialized = $this->serializer->serialize($arData, 'json');
         $jsonDecode = new JsonDecode();
-        return $jsonDecode->decode($dataSerialized, "json");
+
+        return $jsonDecode->decode($dataSerialized, 'json');
     }
 
     /**
@@ -41,8 +42,8 @@ class BookApiController extends AbstractController
     {
         if (!$this->checkApiKey($request)) {
             $arData = [
-                "status" => "error",
-                "message" => "invalid api key"
+                'status' => 'error',
+                'message' => 'invalid api key',
             ];
         } else {
             $books = $repository->findBy([], ['addedDate' => 'DESC']);
@@ -51,19 +52,19 @@ class BookApiController extends AbstractController
                 if (!$book->isDownloadable()) {
                     $book->setFile(null);
                 } elseif ($book->getFile()) {
-                    $fileSrc = $this->getParameter('public_directory') . $this->getParameter('files_directory') . $book->getFile();
+                    $fileSrc = $this->getParameter('app.public_directory').$this->getParameter('app.files_directory').$book->getFile();
                     $book->setFile($fileSrc);
                 }
 
                 if ($book->getCoverImage()) {
-                    $coverImageSrc = $this->getParameter('public_directory') . $this->getParameter('images_directory') . $book->getCoverImage();
+                    $coverImageSrc = $this->getParameter('app.public_directory').$this->getParameter('app.images_directory').$book->getCoverImage();
                     $book->setCoverImage($coverImageSrc);
                 }
             }
 
             $arData = [
-                "status" => "ok",
-                "message" => $books
+                'status' => 'ok',
+                'message' => $books,
             ];
         }
 
@@ -77,8 +78,8 @@ class BookApiController extends AbstractController
     {
         if (!$this->checkApiKey($request)) {
             $arData = [
-                "status" => "error",
-                "message" => "invalid api key"
+                'status' => 'error',
+                'message' => 'invalid api key',
             ];
         } else {
             $repository = $em->getRepository(Book::class);
@@ -87,37 +88,38 @@ class BookApiController extends AbstractController
 
             if (!$book) {
                 $arData = [
-                    "status" => "error",
-                    "message" => "no such book to edit"
+                    'status' => 'error',
+                    'message' => 'no such book to edit',
                 ];
             } else {
-                if ($title = $request->get("title")) {
+                if ($title = $request->get('title')) {
                     $book->setTitle($title);
                 }
 
-                if ($author = $request->get("author")) {
+                if ($author = $request->get('author')) {
                     $book->setAuthor($author);
                 }
 
-                if ($addedDate = $request->get("addedDate")) {
+                if ($addedDate = $request->get('addedDate')) {
                     $book->setAddedDate($addedDate instanceof \DateTime ?: new \DateTime());
                 }
 
-                if ($downloadable = $request->get("downloadable")) {
+                if ($downloadable = $request->get('downloadable')) {
                     $book->setDownloadable($downloadable);
                 }
 
                 $em->persist($book);
                 $em->flush();
 
-                $cache->invalidateTags([$this->getParameter("list_cache_key")]);
+                $cache->invalidateTags([$this->getParameter('app.list_cache_key')]);
 
                 $arData = [
-                    "status" => "success",
-                    "message" => "The information has been updated."
+                    'status' => 'success',
+                    'message' => 'The information has been updated.',
                 ];
             }
         }
+
         return new JsonResponse($this->formJsonResponce($arData));
     }
 
@@ -128,17 +130,17 @@ class BookApiController extends AbstractController
     {
         if (!$this->checkApiKey($request)) {
             $arData = [
-                "status" => "error",
-                "message" => "invalid api key"
+                'status' => 'error',
+                'message' => 'invalid api key',
             ];
         } else {
-            $author = $request->get("author");
-            $title = $request->get("title");
+            $author = $request->get('author');
+            $title = $request->get('title');
 
             if (!$author || !$title) {
                 $arData = [
-                    "status" => "error",
-                    "message" => "no title and/or author parameters found in request"
+                    'status' => 'error',
+                    'message' => 'no title and/or author parameters found in request',
                 ];
             } else {
                 $book = new Book();
@@ -146,20 +148,21 @@ class BookApiController extends AbstractController
                 $book->setTitle($title);
                 $book->setAuthor($author);
 
-                $addedDate = $request->get("addedDate") instanceof \DateTime ?: new \DateTime();
+                $addedDate = $request->get('addedDate') instanceof \DateTime ?: new \DateTime();
                 $book->setAddedDate($addedDate);
 
                 $em->persist($book);
                 $em->flush();
 
-                $cache->invalidateTags([$this->getParameter("list_cache_key")]);
+                $cache->invalidateTags([$this->getParameter('app.list_cache_key')]);
 
                 $arData = [
-                    "status" => "ok",
-                    "message" => "new book has been added"
+                    'status' => 'ok',
+                    'message' => 'new book has been added',
                 ];
             }
         }
+
         return new JsonResponse($this->formJsonResponce($arData));
     }
 }

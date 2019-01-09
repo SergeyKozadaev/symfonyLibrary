@@ -3,14 +3,16 @@
 namespace App\Tests\EventListener;
 
 use App\Entity\Book;
-use App\EventListener\FileClearingSubscriber;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Repository\BookRepository;
+use App\Tests\AppBasicTest;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-class FileClearingSubscriberTest extends WebTestCase
+class FileClearingSubscriberTest extends AppBasicTest
 {
-    const BOOK_ID = 250;
+    /** @var EntityManagerInterface $entityManager */
     private $entityManager;
+
     private $filesDir;
     private $imagesDir;
     private $publicDir;
@@ -20,37 +22,66 @@ class FileClearingSubscriberTest extends WebTestCase
         parent::__construct($name, $data, $dataName);
 
         $kernel = self::bootKernel();
-        $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
-        $this->filesDir = $kernel->getContainer()->getParameter('files_directory');
-        $this->imagesDir = $kernel->getContainer()->getParameter('images_directory');
-        $this->publicDir = $kernel->getContainer()->getParameter('public_directory');
 
+        $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
+
+        $this->filesDir = $kernel->getContainer()->getParameter('app.files_directory');
+        $this->imagesDir = $kernel->getContainer()->getParameter('app.images_directory');
+        $this->publicDir = $kernel->getContainer()->getParameter('app.public_directory');
+
+        $this->userStr = 'Clear'.$this->userStr;
     }
 
-    public function testClear()
+    private function getFirstBookId()
     {
-        $repository = $this->entityManager->getRepository(Book::class);
-        $book = $repository->findOneBy(['id' => self::BOOK_ID]);
+        $crawler = $this->client->request('GET', '/');
 
-        $this->assertTrue($book !== null, "Нет книги с id = " . self::BOOK_ID);
+        $bookElement = $crawler->filter('div.container:contains('.$this->userStr.')');
+
+        return $bookElement->count() > 0 ? $bookElement->attr('id') : null;
+    }
+
+    private function checkBookRemove(int $bookId)
+    {
+        /** @var BookRepository $repository */
+        $repository = $this->entityManager->getRepository(Book::class);
+        /** @var Book $book */
+        $book = $repository->findOneBy(['id' => $bookId]);
+
+        $this->assertTrue(null !== $book);
 
         $file = $book->getFile();
         $image = $book->getCoverImage();
 
-        $fileClearingHandler = new FileClearingSubscriber($this->imagesDir, $this->filesDir, $this->publicDir);
-        $fileClearingHandler->clear($book);
+        $book = $this->entityManager->merge($book);
+        $this->entityManager->remove($book);
+        $this->entityManager->flush();
 
         $fileSystem = new Filesystem();
 
-        if($file !== null) {
-            $fileSrc = $this->publicDir . $this->filesDir . $file;
-            $this->assertTrue(!$fileSystem->exists($fileSrc), "");
+        if (null !== $file) {
+            $fileSrc = $this->publicDir.$this->filesDir.$file;
+            $this->assertTrue(!$fileSystem->exists($fileSrc), '');
         }
 
-        if($image !== null) {
-            $imageSrc = $this->publicDir . $this->imagesDir . $image;
+        if (null !== $image) {
+            $imageSrc = $this->publicDir.$this->imagesDir.$image;
             $this->assertTrue(!$fileSystem->exists($imageSrc));
         }
     }
 
+    public function testBookRemove()
+    {
+        $this->checkUserRegistration();
+
+        $this->checkUserAuthorisation();
+
+        $this->checkBookAddFormExistence();
+
+        $this->checkBookAdd();
+
+        $bookId = $this->getFirstBookId();
+
+        $this->checkBookRemove($bookId);
+    }
 }

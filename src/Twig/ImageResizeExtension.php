@@ -25,26 +25,26 @@ class ImageResizeExtension extends AbstractExtension
                 'imgResize',
                 [
                     $this,
-                    'imageResize'
+                    'imageResize',
                 ],
                 [
-                    'is_safe' => ['html']
+                    'is_safe' => ['html'],
                 ]
-            )
+            ),
         ];
     }
 
     public function imageResize(string $imageSrc, int $width, int $height)
     {
-        $imagePath = $this->params->get('images_directory') . $imageSrc;
-        $imgContainerStyles = "position: relative; overflow: hidden; width: " . $width . "px; height: " . $height . "px";
-        $imgStyles = "position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: 100%";
+        $imagePath = $this->params->get('app.images_directory').$imageSrc;
+        $imgContainerStyles = 'position: relative; overflow: hidden; width: '.$width.'px; height: '.$height.'px';
+        $imgStyles = 'position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: 100%';
 
-        if(!$this->fileSystem->exists($imagePath)) {
-            $imagePath = $this->params->get('stub_image');
+        if (!$this->fileSystem->exists($imagePath)) {
+            $imagePath = $this->params->get('app.stub_image');
         }
 
-        $htmlOutput = "<div class=\"img-container\" style='" . $imgContainerStyles . "'><img src='". "/" . $imagePath . "' style='" . $imgStyles . "'></div>";
+        $htmlOutput = "<div class=\"img-container\" style='".$imgContainerStyles."'><img src='".'/'.$imagePath."' style='".$imgStyles."'></div>";
 
         return $htmlOutput;
     }

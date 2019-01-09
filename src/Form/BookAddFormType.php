@@ -17,27 +17,27 @@ class BookAddFormType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Название'
+                'label' => 'Название',
             ])
             ->add('author', TextType::class, [
-                'label' => 'Автор'
+                'label' => 'Автор',
             ])
             ->add('addedDate', DateTimeType::class, [
                 'data' => new \DateTime(),
                 'label' => 'Дата прочтения',
-                'choice_translation_domain' => 'forms'
+                'choice_translation_domain' => 'forms',
             ])
             ->add('downloadable', CheckboxType::class, [
                 'required' => false,
-                'label' => 'Доступно для скачивания'
+                'label' => 'Доступно для скачивания',
             ])
             ->add('coverImage', FileType::class, [
                 'required' => false,
-                'label' => 'Обложка: '
+                'label' => 'Обложка: ',
             ])
             ->add('file', FileType::class, [
                 'required' => false,
-                'label' => 'Файл: '
+                'label' => 'Файл: ',
             ])
         ;
     }
@@ -45,8 +45,7 @@ class BookAddFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Book::class
+            'data_class' => Book::class,
         ]);
     }
-
 }

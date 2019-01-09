@@ -16,26 +16,26 @@ class BookEditFormType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Название'
+                'label' => 'Название',
             ])
             ->add('author', TextType::class, [
-                'label' => 'Автор'
+                'label' => 'Автор',
             ])
             ->add('addedDate', DateTimeType::class, [
                 'label' => 'Дата прочтения',
-                'choice_translation_domain' => 'forms'
+                'choice_translation_domain' => 'forms',
             ])
             ->add('downloadable', CheckboxType::class, [
                 'required' => false,
-                'label' => 'Доступно для скачивания'
+                'label' => 'Доступно для скачивания',
             ])
             ->add('coverImage', TextType::class, [
                 'required' => false,
-                'label' => 'Обложка: '
+                'label' => 'Обложка: ',
             ])
             ->add('file', TextType::class, [
                 'required' => false,
-                'label' => 'Файл: '
+                'label' => 'Файл: ',
             ])
         ;
     }
@@ -43,8 +43,7 @@ class BookEditFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Book::class
+            'data_class' => Book::class,
         ]);
     }
-
 }

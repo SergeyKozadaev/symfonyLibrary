@@ -13,7 +13,7 @@ class FileUploader
         $charsLength = strlen($chars);
         $randomString = '';
 
-        for ($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; ++$i) {
             $randomString .= $chars[rand(0, $charsLength - 1)];
         }
 
@@ -22,15 +22,15 @@ class FileUploader
 
     public function upload(UploadedFile $file, string $targetDirectory)
     {
-        $fileName = md5(uniqid()) . '.' . $file->guessExtension();
-        $randomDir = $this->generateRandomString() . "/";
+        $fileName = md5(uniqid()).'.'.$file->guessExtension();
+        $randomDir = $this->generateRandomString().'/';
 
         try {
-            $file->move($targetDirectory . $randomDir, $fileName);
+            $file->move($targetDirectory.$randomDir, $fileName);
         } catch (FileException $e) {
             return null;
         }
 
-        return $randomDir . $fileName;
+        return $randomDir.$fileName;
     }
 }

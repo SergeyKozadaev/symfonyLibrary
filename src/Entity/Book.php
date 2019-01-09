@@ -138,23 +138,22 @@ class Book
 
     public function isDownloadable(): bool
     {
-        return $this->downloadable !== false;
+        return false !== $this->downloadable;
     }
 
-
     // custom validation function for Book class
+
     /**
      * @Assert\Callback()
      */
     public function validate(ExecutionContextInterface $context)
     {
-        if(false) {
+        if (false) {
             $context
                 ->buildViolation('')
                 ->atPath('title')
                 ->addViolation()
             ;
         }
-
     }
 }

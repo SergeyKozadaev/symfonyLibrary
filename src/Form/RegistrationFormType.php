@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
@@ -17,6 +18,4 @@ class RegistrationFormType extends AbstractType
     {
         return BaseRegistrationFormType::class;
     }
-
-
 }

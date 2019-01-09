@@ -7,7 +7,7 @@
         <div class="nav navbar-nav navbar-right">
             {% if is_granted('ROLE_USER') %}
                 <li>
-                    <a href="{{ path('app_books_add') }}">
+                    <a href="{{ path('app_books_add') }}" id="book-add-link">
                         <span class="glyphicon glyphicon-book"></span> Добавить книгу
                     </a>
                 </li>

@@ -7,6 +7,7 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class FileClearingSubscriber implements EventSubscriber
 {
@@ -24,7 +25,7 @@ class FileClearingSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return [
-            Events::preRemove
+            Events::preRemove,
         ];
     }
 
@@ -34,23 +35,37 @@ class FileClearingSubscriber implements EventSubscriber
         $this->clear($entity);
     }
 
-    public function clear($entity)
+    public function fileRemove(string $file)
     {
-        if($entity instanceof Book) {
-            $filesystem = new Filesystem();
+        $filesystem = new Filesystem();
+        $finder = new Finder();
 
-            $fileSrc = $this->publicDir . $this->filesDir . $entity->getFile();
-            if($entity->getFile() && $filesystem->exists($fileSrc)) {
-                $filesystem->remove($fileSrc);
-            }
+        $fileSrc = $this->publicDir.$file;
 
-            $imageSrc = $this->publicDir . $this->imagesDir . $entity->getCoverImage();
-            if($entity->getCoverImage() && $filesystem->exists($imageSrc)) {
-                $filesystem->remove($imageSrc);
+        if ($filesystem->exists($fileSrc)) {
+            $filesystem->remove($fileSrc);
+
+            $dir = mb_substr($fileSrc, 0, strrpos($fileSrc, '/'));
+            $arFiles = $finder->files()->in($dir);
+
+            if (0 === count($arFiles)) {
+                $filesystem->remove($dir);
             }
-        } else {
-            return;
         }
     }
 
+    public function clear($entity)
+    {
+        if (!$entity instanceof Book) {
+            return;
+        }
+
+        if (null !== $entity->getFile()) {
+            $this->fileRemove($this->filesDir.$entity->getFile());
+        }
+
+        if (null !== $entity->getCoverImage()) {
+            $this->fileRemove($this->imagesDir.$entity->getCoverImage());
+        }
+    }
 }
