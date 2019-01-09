@@ -22,19 +22,6 @@ class BookApiController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    private function checkApiKey(Request $request)
-    {
-        return $request->get('key') === $this->getParameter('app.api_key') ? true : false;
-    }
-
-    private function formJsonResponce($arData)
-    {
-        $dataSerialized = $this->serializer->serialize($arData, 'json');
-        $jsonDecode = new JsonDecode();
-
-        return $jsonDecode->decode($dataSerialized, 'json');
-    }
-
     /**
      * @Route("/api/v1/books", name="api_v1_books")
      */
@@ -137,7 +124,7 @@ class BookApiController extends AbstractController
             $author = $request->get('author');
             $title = $request->get('title');
 
-            if (!$author || !$title) {
+            if (null === $author || null === $title) {
                 $arData = [
                     'status' => 'error',
                     'message' => 'no title and/or author parameters found in request',
@@ -164,5 +151,18 @@ class BookApiController extends AbstractController
         }
 
         return new JsonResponse($this->formJsonResponce($arData));
+    }
+
+    private function checkApiKey(Request $request)
+    {
+        return $request->get('key') === $this->getParameter('app.api_key') ? true : false;
+    }
+
+    private function formJsonResponce($arData)
+    {
+        $dataSerialized = $this->serializer->serialize($arData, 'json');
+        $jsonDecode = new JsonDecode();
+
+        return $jsonDecode->decode($dataSerialized, 'json');
     }
 }

@@ -18,6 +18,11 @@ class BookApiControllerTest extends AppBasicTest
         $this->userStr = 'Api'.$this->userStr;
     }
 
+    public function testBookAdd()
+    {
+        $this->checkBookAdd();
+    }
+
     protected function checkBookAdd()
     {
         $client = $this->createClient();
@@ -28,7 +33,7 @@ class BookApiControllerTest extends AppBasicTest
             [
                 'key' => $this->apiKey,
                 'title' => $this->userStr,
-                'author' => $this->userStr,
+                //'author' => $this->userStr,
                 'addedDate' => '',
             ]
         );
@@ -40,10 +45,5 @@ class BookApiControllerTest extends AppBasicTest
         $this->assertTrue($response->headers->contains('Content-Type', 'application/json'));
 
         $this->assertContains('"status":"ok"', $response->getContent());
-    }
-
-    public function testBookAdd()
-    {
-        $this->checkBookAdd();
     }
 }

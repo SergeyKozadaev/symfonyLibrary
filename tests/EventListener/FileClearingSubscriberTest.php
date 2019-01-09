@@ -32,6 +32,21 @@ class FileClearingSubscriberTest extends AppBasicTest
         $this->userStr = 'Clear'.$this->userStr;
     }
 
+    public function testBookRemove()
+    {
+        $this->checkUserRegistration();
+
+        $this->checkUserAuthorisation();
+
+        $this->checkBookAddFormExistence();
+
+        $this->checkBookAdd();
+
+        $bookId = $this->getFirstBookId();
+
+        $this->checkBookRemove($bookId);
+    }
+
     private function getFirstBookId()
     {
         $crawler = $this->client->request('GET', '/');
@@ -68,20 +83,5 @@ class FileClearingSubscriberTest extends AppBasicTest
             $imageSrc = $this->publicDir.$this->imagesDir.$image;
             $this->assertTrue(!$fileSystem->exists($imageSrc));
         }
-    }
-
-    public function testBookRemove()
-    {
-        $this->checkUserRegistration();
-
-        $this->checkUserAuthorisation();
-
-        $this->checkBookAddFormExistence();
-
-        $this->checkBookAdd();
-
-        $bookId = $this->getFirstBookId();
-
-        $this->checkBookRemove($bookId);
     }
 }

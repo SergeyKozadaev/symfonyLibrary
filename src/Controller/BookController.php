@@ -19,13 +19,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BookController extends Controller
 {
-    private function getBookById($id, EntityManagerInterface $em)
-    {
-        $repository = $em->getRepository(Book::class);
-
-        return $repository->findOneBy(['id' => $id]);
-    }
-
     /**
      * @Route("/", name="app_homepage")
      */
@@ -202,5 +195,12 @@ class BookController extends Controller
                 return new JsonResponse(['result' => 'success']);
             }
         }
+    }
+
+    private function getBookById($id, EntityManagerInterface $em)
+    {
+        $repository = $em->getRepository(Book::class);
+
+        return $repository->findOneBy(['id' => $id]);
     }
 }
