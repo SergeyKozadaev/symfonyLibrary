@@ -124,10 +124,15 @@ class BookApiController extends AbstractController
             $author = $request->get('author');
             $title = $request->get('title');
 
-            if (null === $author || null === $title) {
+            if (null === $author) {
                 $arData = [
                     'status' => 'error',
-                    'message' => 'no title and/or author parameters found in request',
+                    'message' => 'no author parameter was found in the request',
+                ];
+            } elseif (null === $title) {
+                $arData = [
+                    'status' => 'error',
+                    'message' => 'no title parameter was found in the request',
                 ];
             } else {
                 $book = new Book();

@@ -5,7 +5,7 @@ namespace App\Tests;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\File;
 
-abstract class AppBasicTest extends WebTestCase
+class AppBasicTest extends WebTestCase
 {
     protected $client;
 

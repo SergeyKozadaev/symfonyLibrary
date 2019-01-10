@@ -33,7 +33,7 @@ class BookApiControllerTest extends AppBasicTest
             [
                 'key' => $this->apiKey,
                 'title' => $this->userStr,
-                //'author' => $this->userStr,
+                'author' => $this->userStr,
                 'addedDate' => '',
             ]
         );
